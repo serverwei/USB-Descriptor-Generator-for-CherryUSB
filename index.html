@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>
+        USB Descriptor for CherryUSB
+    </title>
+</head>
+<link ref="stylesheet" href="/css/usbddg.css">
+<script type="text/javascript" src="/javascript/usbddg.js"></script>
+
+<body style="display: flex; flex-direction: column;">
+    <div style="display: flex; flex-direction: column;">
+        <div style="display: flex; flex-direction: row;">
+            <div style="display: flex; flex-direction: column;">
+                <div>Device</div>
+                <table id="deviceInfoTable">
+                    <tr>
+                        <td>
+                            bcdUSB
+                        </td>
+                        <td>
+                            <select id="bcdUSB">
+                                <option value="0100">
+                                    USB1.0
+                                </option>
+                                <option value="0110">
+                                    USB1.1
+                                </option>
+                                <option value="0200" selected>
+                                    USB2.0
+                                </option>
+                                <option value="0210">
+                                    USB2.1
+                                </option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            bDeviceClass(hex)
+                        </td>
+                        <td>
+                            <input id="bDeviceClass" type="text" maxlength="2" oninput="hexValueInput(this, 2)"
+                                value="00">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            bDeviceSubClass(hex)
+                        </td>
+                        <td>
+                            <input id="bDeviceSubClass" type="text" maxlength="2" oninput="hexValueInput(this, 2)"
+                                value="00">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            bDeviceProtocol(hex)
+                        </td>
+                        <td>
+                            <input id="bDeviceProtocol" type="text" maxlength="2" oninput="hexValueInput(this, 2)"
+                                value="00">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            bMaxPacketSize0
+                        </td>
+                        <td>
+                            <input id="bMaxPacketSize0" type="number" value="64" min="0">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Vendor ID(hex)
+                        </td>
+                        <td>
+                            <input id="vendorId" type="text" maxlength="4" oninput="hexValueInput(this, 4)"
+                                value="0000">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Product ID(hex)
+                        </td>
+                        <td>
+                            <input id="productId" type="text" maxlength="4" oninput="hexValueInput(this, 4)"
+                                value="0000">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            bcdDevice(hex)
+                        </td>
+                        <td>
+                            <input id="bcdDevice" type="text" maxlength="4" oninput="hexValueInput(this, 4)"
+                                value="0000">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Manufacturer
+                        </td>
+                        <td>
+                            <input id="ManufacturerString" type="text" value="Manufacturer">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Product
+                        </td>
+                        <td>
+                            <input id="ProductString" type="text" value="Product">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            SerialNumber
+                        </td>
+                        <td>
+                            <input id="SerialNumberString" type="text" value="SerialNumber">
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+            <div style="display: flex; flex-direction: column;">
+                <div>Configuration</div>
+                <table id="configTable">
+                    <tr>
+                        <td>
+                            bmAttributes
+                        </td>
+                        <td>
+                            <label style="display: flex; flex-direction: row;">
+                                Bus Powered
+                                <input type="checkbox" id="busPowered" checked>
+                            </label>
+                            <label style="display: flex; flex-direction: row;">
+                                Remote Wakeup
+                                <input type="checkbox" id="remoteWakeup">
+                            </label>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            MaxPower(mA)
+                        </td>
+                        <td>
+                            <input id="maxPower" type="number" value="100" min="0">
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        <div style="height: 20px;"></div>
+        <div style="display: flex; flex-direction: row;">
+            <button type="button" style="align-self: start;" onclick="addHidInterface()">
+                Add HID interface
+            </button>
+            <div style="width: 20px;">
+            </div> <button type="button" style="align-self: start;" onclick="addCdcInterface()">
+                Add CDC-ACM interface
+            </button>
+        </div>
+        <div style="height: 20px;"></div>
+        <div id="InterfaceArea"></div>
+    </div>
+
+    <div style="display: flex; flex-direction: column;">
+        <div>
+            <button type="button" onclick="generateCode()">Generate code</button>
+        </div>
+        <div style="height: 20px;"></div>
+        <div style="display: flex; flex-direction: row;">
+            <div style="display: flex; flex-direction: column;">
+                <div div style="display: flex; flex-direction: row;">
+                    <div>
+                        .c file
+                    </div>
+                    <div style="width: 10px;"></div>
+                    <div div style="display: flex; flex-direction: row;">
+                        <div>
+                            file name
+                        </div>
+                        <div style="width: 10px;"></div>
+                        <input type="text" id="DescriptorcFileNameInput" value="usbd_descriptor.c">
+                        <button type="button"
+                            onclick="downloadFile(`DescriptorcFileNameInput`, `DescriptorcFileData`)">download</button>
+                    </div>
+                </div>
+                <textarea id="DescriptorcFileData" readonly style="resize: none; height: 90vh; width: 24vw;"></textarea>
+            </div>
+            <div style="width: 10px;"></div>
+            <div style="display: flex; flex-direction: column;">
+                <div div style="display: flex; flex-direction: row;">
+                    <div>
+                        .h file
+                    </div>
+                    <div style="width: 10px;"></div>
+                    <div div style="display: flex; flex-direction: row;">
+                        <div>
+                            file name
+                        </div>
+                        <div style="width: 10px;"></div>
+                        <input type="text" id="DescriptorhFileNameInput" value="usbd_descriptor.h">
+                        <button type="button"
+                            onclick="downloadFile(`DescriptorhFileNameInput`, `DescriptorhFileData`)">download</button>
+                    </div>
+                </div>
+                <textarea id="DescriptorhFileData" readonly style="resize: none; height: 90vh; width: 24vw;"></textarea>
+            </div>
+            <div style="width: 10px;"></div>
+            <div style="display: flex; flex-direction: column;">
+                <div div style="display: flex; flex-direction: row;">
+                    <div>
+                        .c file
+                    </div>
+                    <div style="width: 10px;"></div>
+                    <div div style="display: flex; flex-direction: row;">
+                        <div>
+                            file name
+                        </div>
+                        <div style="width: 10px;"></div>
+                        <input type="text" id="DevicecFileNameInput" value="usb_device.c">
+                        <button type="button"
+                            onclick="downloadFile(`DevicecFileNameInput`, `DevicecFileData`)">download</button>
+                    </div>
+                </div>
+                <textarea id="DevicecFileData" readonly style="resize: none; height: 90vh; width: 24vw;"></textarea>
+            </div>
+            <div style="width: 10px;"></div>
+            <div style="display: flex; flex-direction: column;">
+                <div div style="display: flex; flex-direction: row;">
+                    <div>
+                        .h file
+                    </div>
+                    <div style="width: 10px;"></div>
+                    <div div style="display: flex; flex-direction: row;">
+                        <div>
+                            file name
+                        </div>
+                        <div style="width: 10px;"></div>
+                        <input type="text" id="DevicehFileNameInput" value="usb_device.h">
+                        <button type="button"
+                            onclick="downloadFile(`DevicehFileNameInput`, `DevicehFileData`)">download</button>
+                    </div>
+                </div>
+                <textarea id="DevicehFileData" readonly style="resize: none; height: 90vh; width: 24vw;"></textarea>
+            </div>
+        </div>
+    </div>
+
+</body>
+
+</html>
