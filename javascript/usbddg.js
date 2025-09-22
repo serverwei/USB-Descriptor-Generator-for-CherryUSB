@@ -1797,10 +1797,10 @@ function generateCode() {
 
     cFileData = `#include "${devicehFileName}"\
     \r\n\
-    \r\n#ifdef STM32F0 || STM32L0 || STM32G4 || STM32F1\
+    \r\n#if defined(STM32F0) || defined(STM32L0) || defined(STM32G4) || defined(STM32F1)\
     \r\nvoid usb_dc_low_level_init(void)\
     \r\n{\
-    \r\n#ifdef STM32G4 || STM32F1\
+    \r\n#if defined(STM32G4) || defined(STM32F1)\
     \r\n    RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};\
     \r\n\        
     \r\n    PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USB;\
@@ -1816,7 +1816,33 @@ function generateCode() {
     \r\n    HAL_NVIC_SetPriority(USB_IRQn, 0, 0);\
     \r\n    HAL_NVIC_EnableIRQ(USB_IRQn);\
     \r\n}\
-    \r\n\      
+    \r\n\
+    \r\n#elif defined(__CH32F10x_H)\
+    \r\nvoid usb_dc_low_level_init(void)\
+    \r\n{\
+    \r\n    if (SystemCoreClock == 72000000) {\
+    \r\n        RCC_USBCLKConfig(RCC_USBCLKSource_PLLCLK_1Div5);\
+    \r\n    } else if (SystemCoreClock == 48000000) {\
+    \r\n        RCC_USBCLKConfig(RCC_USBCLKSource_PLLCLK_Div1);\
+    \r\n    }\
+    \r\n    RCC_APB1PeriphClockCmd(RCC_APB1Periph_USB, ENABLE);\
+    \r\n\
+    \r\n    if (PWR_VDD_SupplyVoltage() == PWR_VDD_5V) {\
+    \r\n        EXTEN->EXTEN_CTR |= EXTEN_USB_5V_SEL;\
+    \r\n    } else {\
+    \r\n        EXTEN->EXTEN_CTR &= ~EXTEN_USB_5V_SEL;\
+    \r\n    }\
+    \r\n\
+    \r\n    (EXTEN->EXTEN_CTR) |= EXTEN_USBD_PU_EN;\
+    \r\n\
+    \r\n    NVIC_InitTypeDef NVIC_InitStructure;\
+    \r\n    NVIC_InitStructure.NVIC_IRQChannel                   = USB_LP_CAN1_RX0_IRQn;\
+    \r\n    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;\
+    \r\n    NVIC_InitStructure.NVIC_IRQChannelSubPriority        = 0;\
+    \r\n    NVIC_InitStructure.NVIC_IRQChannelCmd                = ENABLE;\
+    \r\n    NVIC_Init(&NVIC_InitStructure);\
+    \r\n}\
+    \r\n      
     \r\n#else\
     \r\n// You need to fill the usb_dc_low_level_init function correctly\
     \r\nvoid usb_dc_low_level_init(void)\
@@ -1824,24 +1850,33 @@ function generateCode() {
     \r\n}\
     \r\n#endif\
     \r\n\
-    \r\n#ifdef STM32F0 || STM32L0\
+    \r\n#if defined(STM32F0) || defined(STM32L0)\
     \r\nvoid USB_IRQHandler(void)\
     \r\n{\
     \r\n    extern void USBD_IRQHandler(uint8_t busid);\
     \r\n    USBD_IRQHandler(USBD_BUSID);\
     \r\n}
-    \r\n#elif STM32G4 || STM32F1\
+    \r\n\
+    \r\n#elif defined(STM32G4) || defined(STM32F1)\
     \r\nvoid USB_LP_IRQHandler(void)\
     \r\n{\
     \r\n    extern void USBD_IRQHandler(uint8_t busid);\
     \r\n    USBD_IRQHandler(USBD_BUSID);\
     \r\n}\
+    \r\n\
+    \r\n#elif defined(__CH32F10x_H)\
+    \r\nvoid USB_LP_CAN1_RX0_IRQHandler(void)\
+    \r\n{\
+    \r\n    extern void USBD_IRQHandler(uint8_t busid);\
+    \r\n    USBD_IRQHandler(USBD_BUSID);\
+    \r\n}\
+    \r\n\
     \r\n#else\
     \r\n// You need to replace USB_IRQHandler with the correct USB interrupt callback function\
     \r\nvoid USB_IRQHandler(void)\
     \r\n{\
     \r\n    extern void USBD_IRQHandler(uint8_t busid);\
-    \r\n    USBD_IRQHandler(0);\
+    \r\n    USBD_IRQHandler(USBD_BUSID);\
     \r\n}\
     \r\n#endif\
     \r\n\
