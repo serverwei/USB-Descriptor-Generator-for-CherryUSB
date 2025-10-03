@@ -2122,7 +2122,12 @@ function generateCode() {
                             USBD_Ep_Callback_String += `\
                             \r\n__weak void USBD_Intf${InterfaceNum}_OutEp0_Callback(uint8_t busid, uint8_t ep, uint32_t nbytes)\
                             \r\n{\
-                            \r\nusbd.Intf${InterfaceNum}.Output.State = 1;\
+                            \r\nusbd.Intf${InterfaceNum}.Output.State = 1;\               
+                            \r\nusbd_ep_start_read(\
+                            \r\n\tUSBD_BUSID,\
+                            \r\n\tusbd.Intf${InterfaceNum}.Output.Address,\
+                            \r\n\tusbd.Intf${InterfaceNum}.Output.Frame.Buffer,\
+                            \r\n\tsizeof(usbd.Intf${InterfaceNum}.Output.Frame.Buffer));\
                             \r\n}\
                             `;
 
@@ -2130,7 +2135,7 @@ function generateCode() {
                                 if (interfaceInfo[i]["VendorDefine"]["Output"]["Enabled"]) {
 
                                     USBD_Event_Handler_String += `\
-                                    \r\nusbd_ep_start_read(
+                                    \r\nusbd_ep_start_read(\
                                     \r\n\tUSBD_BUSID,\
                                     \r\n\tusbd.Intf${InterfaceNum}.Output.Address,\
                                     \r\n\tusbd.Intf${InterfaceNum}.Output.Frame.Buffer,\
@@ -2327,10 +2332,16 @@ function generateCode() {
                             \r\n__weak void USBD_Intf${InterfaceNum + 1}_OutEp0_Callback(uint8_t busid, uint8_t ep, uint32_t nbytes)\
                             \r\n{\
                             \r\nusbd.Intf${InterfaceNum + 1}.OutEndpoint.State = 1;\
+                            \r\nusbd_ep_start_read(\
+                            \r\n\tUSBD_BUSID,\
+                            \r\n\tusbd.Intf${InterfaceNum + 1}.OutEndpoint.Address,\
+                            \r\n\tusbd.Intf${InterfaceNum + 1}.OutEndpoint.Buffer,\
+                            \r\n\tsizeof(usbd.Intf${InterfaceNum + 1}.OutEndpoint.Buffer));\
                             \r\n}\
                             `;
+
                         USBD_Event_Handler_String += `\
-                            \r\nusbd_ep_start_read(
+                            \r\nusbd_ep_start_read(\
                             \r\n\tUSBD_BUSID,\
                             \r\n\tusbd.Intf${InterfaceNum + 1}.OutEndpoint.Address,\
                             \r\n\tusbd.Intf${InterfaceNum + 1}.OutEndpoint.Buffer,\
