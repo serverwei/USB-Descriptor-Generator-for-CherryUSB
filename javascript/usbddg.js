@@ -31,7 +31,7 @@ function addHidInterface() {
     div.appendChild(document.createElement("div"));
     div.getElementsByTagName("div")[0].style = "display: flex; flex-direction: row;"
     div.getElementsByTagName("div")[0].appendChild(document.createElement("div"));
-    div.getElementsByTagName("div")[0].getElementsByTagName("div")[0].innerHTML = "Interface";
+    div.getElementsByTagName("div")[0].getElementsByTagName("div")[0].innerHTML = "HID Class";
     div.getElementsByTagName("div")[0].appendChild(document.createElement("button"));
     div.getElementsByTagName("div")[0].getElementsByTagName("button")[0].innerHTML = "Delete";
     div.getElementsByTagName("div")[0].getElementsByTagName("button")[0].type = "button";
@@ -429,7 +429,7 @@ function addCdcInterface() {
     div.appendChild(document.createElement("div"));
     div.getElementsByTagName("div")[0].style = "display: flex; flex-direction: row;"
     div.getElementsByTagName("div")[0].appendChild(document.createElement("div"));
-    div.getElementsByTagName("div")[0].getElementsByTagName("div")[0].innerHTML = "Interface";
+    div.getElementsByTagName("div")[0].getElementsByTagName("div")[0].innerHTML = "CDC ACM Class";
     div.getElementsByTagName("div")[0].appendChild(document.createElement("button"));
     div.getElementsByTagName("div")[0].getElementsByTagName("button")[0].innerHTML = "Delete";
     div.getElementsByTagName("div")[0].getElementsByTagName("button")[0].type = "button";
@@ -442,7 +442,7 @@ function addCdcInterface() {
     let tr;
     let td;
 
-    //Init endpoint
+    //Int endpoint
     {
         tr = document.createElement("tr");
         td = document.createElement("td");
@@ -547,6 +547,129 @@ function addCdcInterface() {
         td = document.createElement("td");
         td.appendChild(document.createElement("input"));
         td.getElementsByTagName("input")[0].className = "CDC_TX_Length";
+        td.getElementsByTagName("input")[0].type = "number";
+        td.getElementsByTagName("input")[0].value = 1024;
+        td.getElementsByTagName("input")[0].min = 0;
+        tr.appendChild(td);
+        table.appendChild(tr);
+    }
+    intf.appendChild(table);
+
+    area.appendChild(intf);
+}
+
+function addWinUsbInterface() {
+    let area = document.getElementById("InterfaceArea");
+    let intf = document.createElement("div");
+    intf.style = "display: flex; flex-direction: row; border: 2px solid #333;";
+    intf.className = "Interface";
+    intf.value = "WinUSB";
+
+    let ep = document.createElement("div");
+    ep.style = "display: flex; flex-direction: column;"
+    let div = document.createElement("div");
+    div.appendChild(document.createElement("div"));
+    div.getElementsByTagName("div")[0].style = "display: flex; flex-direction: row;"
+    div.getElementsByTagName("div")[0].appendChild(document.createElement("div"));
+    div.getElementsByTagName("div")[0].getElementsByTagName("div")[0].innerHTML = "WinUSB Class";
+    div.getElementsByTagName("div")[0].appendChild(document.createElement("button"));
+    div.getElementsByTagName("div")[0].getElementsByTagName("button")[0].innerHTML = "Delete";
+    div.getElementsByTagName("div")[0].getElementsByTagName("button")[0].type = "button";
+    div.getElementsByTagName("div")[0].getElementsByTagName("button")[0].onclick = function () {
+        deleteInterface(this);
+    };
+    ep.appendChild(div);
+
+    let table = document.createElement("table");
+    let tr;
+    let td;
+    let checkbox;
+
+    //Input endpoint
+    {
+        tr = document.createElement("tr");
+        td = document.createElement("td");
+        td.innerHTML = "In endpoit";
+        tr.appendChild(td);
+        td = document.createElement("td");
+        checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.className = "WinUSB_Enabled_InEp";
+        checkbox.checked = true;
+        td.appendChild(checkbox);
+        tr.appendChild(td);
+        table.appendChild(tr);
+
+        tr = document.createElement("tr");
+        td = document.createElement("td");
+        td.innerHTML = "Address"
+        tr.appendChild(td);
+        td = document.createElement("td");
+        td.appendChild(document.createElement("input"));
+        td.getElementsByTagName("input")[0].className = "InEpAddr";
+        td.getElementsByTagName("input")[0].type = "number";
+        td.getElementsByTagName("input")[0].value = 0;
+        td.getElementsByTagName("input")[0].min = 0;
+        tr.appendChild(td);
+        table.appendChild(tr);
+    }
+
+    //Output endpoint
+    {
+        tr = document.createElement("tr");
+        td = document.createElement("td");
+        td.innerHTML = "Out endpoit";
+        tr.appendChild(td);
+        td = document.createElement("td");
+        checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.className = "WinUSB_Enabled_OutEp";
+        checkbox.checked = true;
+        td.appendChild(checkbox);
+        tr.appendChild(td);
+        table.appendChild(tr);
+
+        tr = document.createElement("tr");
+        td = document.createElement("td");
+        td.innerHTML = "Address"
+        tr.appendChild(td);
+        td = document.createElement("td");
+        td.appendChild(document.createElement("input"));
+        td.getElementsByTagName("input")[0].className = "OutEpAddr";
+        td.getElementsByTagName("input")[0].type = "number";
+        td.getElementsByTagName("input")[0].value = 0;
+        td.getElementsByTagName("input")[0].min = 0;
+        tr.appendChild(td);
+        table.appendChild(tr);
+    }
+    ep.appendChild(table);
+    intf.appendChild(ep);
+
+
+    //WinUSB params
+    {
+        table = document.createElement("table");
+
+        tr = document.createElement("tr");
+        td = document.createElement("td");
+        td.innerHTML = "Rx Length(Bytes)"
+        tr.appendChild(td);
+        td = document.createElement("td");
+        td.appendChild(document.createElement("input"));
+        td.getElementsByTagName("input")[0].className = "WinUSB_RX_Length";
+        td.getElementsByTagName("input")[0].type = "number";
+        td.getElementsByTagName("input")[0].value = 1024;
+        td.getElementsByTagName("input")[0].min = 0;
+        tr.appendChild(td);
+        table.appendChild(tr);
+
+        tr = document.createElement("tr");
+        td = document.createElement("td");
+        td.innerHTML = "Tx Length(Bytes)"
+        tr.appendChild(td);
+        td = document.createElement("td");
+        td.appendChild(document.createElement("input"));
+        td.getElementsByTagName("input")[0].className = "WinUSB_TX_Length";
         td.getElementsByTagName("input")[0].type = "number";
         td.getElementsByTagName("input")[0].value = 1024;
         td.getElementsByTagName("input")[0].min = 0;
@@ -1174,7 +1297,7 @@ function generateCode() {
                             stringLen += 1;
                             stringTmp += `0x04,\t\t\t// bDescriptorType (Interface)\r\n`;
                             stringLen += 1;
-                            stringTmp += `0x${toHexFormat(i)},\t\t\t// bInterfaceNumber: Interface number\r\n`;
+                            stringTmp += `0x${toHexFormat(interfaceNum)},\t\t\t// bInterfaceNumber: Interface number\r\n`;
                             stringLen += 1;
                             stringTmp += `0x00,\t\t\t// bAlternateSetting: Alternate setting\r\n`;
                             stringLen += 1;
@@ -1284,199 +1407,371 @@ function generateCode() {
                         interfaceInfo[i]["TxLength"] = TxLength;
                         interfaceInfo[i]["MaxMps"] = MaxMps;
 
-
                         let stringTmp = "\r\n/* CDC-ACM Interface */\r\n";
                         let byteCount = 0;
+                        {
 
-                        stringTmp += `\r\n0x08,\t/* bLength */`;
-                        byteCount += 1;
+                            stringTmp += `\r\n0x08,\t/* bLength */`;
+                            byteCount += 1;
 
-                        stringTmp += `\r\n0x0B,\t/* bDescriptorType */`;
-                        byteCount += 1;
+                            stringTmp += `\r\n0x0B,\t/* bDescriptorType */`;
+                            byteCount += 1;
 
-                        stringTmp += `\r\n${interfaceNum},\t/* bFirstInterface */`;
-                        byteCount += 1;
+                            stringTmp += `\r\n${interfaceNum},\t/* bFirstInterface */`;
+                            byteCount += 1;
 
-                        stringTmp += `\r\n0x02,\t/* bInterfaceCount */`;
-                        byteCount += 1;
+                            stringTmp += `\r\n0x02,\t/* bInterfaceCount */`;
+                            byteCount += 1;
 
-                        stringTmp += `\r\n0x02,\t/* bFunctionClass */`;
-                        byteCount += 1;
+                            stringTmp += `\r\n0x02,\t/* bFunctionClass */`;
+                            byteCount += 1;
 
-                        stringTmp += `\r\n0x02,\t/* bFunctionSubClass */`;
-                        byteCount += 1;
+                            stringTmp += `\r\n0x02,\t/* bFunctionSubClass */`;
+                            byteCount += 1;
 
-                        stringTmp += `\r\n0x00,\t/* bFunctionProtocol */`;
-                        byteCount += 1;
+                            stringTmp += `\r\n0x00,\t/* bFunctionProtocol */`;
+                            byteCount += 1;
 
-                        stringTmp += `\r\n0x00,\t/* iFunction */`;
-                        byteCount += 1;
+                            stringTmp += `\r\n0x00,\t/* iFunction */`;
+                            byteCount += 1;
 
-                        stringTmp += `\r\n0x09,\t/* bLength */`;
-                        byteCount += 1;
+                            stringTmp += `\r\n0x09,\t/* bLength */`;
+                            byteCount += 1;
 
-                        stringTmp += `\r\n0x04,\t/* bDescriptorType */`;
-                        byteCount += 1;
+                            stringTmp += `\r\n0x04,\t/* bDescriptorType */`;
+                            byteCount += 1;
 
-                        stringTmp += `\r\n${interfaceNum},\t/* bInterfaceNumber */`;
-                        byteCount += 1;
+                            stringTmp += `\r\n${interfaceNum},\t/* bInterfaceNumber */`;
+                            byteCount += 1;
 
-                        stringTmp += `\r\n0x00,\t/* bAlternateSetting */`;
-                        byteCount += 1;
+                            stringTmp += `\r\n0x00,\t/* bAlternateSetting */`;
+                            byteCount += 1;
 
-                        stringTmp += `\r\n0x01,\t/* bNumEndpoints */`;
-                        byteCount += 1;
+                            stringTmp += `\r\n0x01,\t/* bNumEndpoints */`;
+                            byteCount += 1;
 
-                        stringTmp += `\r\n0x02,\t/* bInterfaceClass */`;
-                        byteCount += 1;
+                            stringTmp += `\r\n0x02,\t/* bInterfaceClass */`;
+                            byteCount += 1;
 
-                        stringTmp += `\r\n0x02,\t/* bInterfaceSubClass */`;
-                        byteCount += 1;
+                            stringTmp += `\r\n0x02,\t/* bInterfaceSubClass */`;
+                            byteCount += 1;
 
-                        stringTmp += `\r\n0x00,\t/* bInterfaceProtocol */`;
-                        byteCount += 1;
+                            stringTmp += `\r\n0x00,\t/* bInterfaceProtocol */`;
+                            byteCount += 1;
 
-                        stringTmp += `\r\n0x02,\t/* iInterface */`;
-                        byteCount += 1;
+                            stringTmp += `\r\n0x02,\t/* iInterface */`;
+                            byteCount += 1;
 
-                        stringTmp += `\r\n0x05,\t/* bLength */`;
-                        byteCount += 1;
+                            stringTmp += `\r\n0x05,\t/* bLength */`;
+                            byteCount += 1;
 
-                        stringTmp += `\r\n0x24,\t/* bDescriptorType */`;
-                        byteCount += 1;
+                            stringTmp += `\r\n0x24,\t/* bDescriptorType */`;
+                            byteCount += 1;
 
-                        stringTmp += `\r\n0x00,\t/* bDescriptorSubtype */`;
-                        byteCount += 1;
+                            stringTmp += `\r\n0x00,\t/* bDescriptorSubtype */`;
+                            byteCount += 1;
 
-                        stringTmp += `\r\n0x10, 0x01,\t/* bcdCDC */`;
-                        byteCount += 2;
+                            stringTmp += `\r\n0x10, 0x01,\t/* bcdCDC */`;
+                            byteCount += 2;
 
-                        stringTmp += `\r\n0x05,\t/* bLength */`;
-                        byteCount += 1;
+                            stringTmp += `\r\n0x05,\t/* bLength */`;
+                            byteCount += 1;
 
-                        stringTmp += `\r\n0x24,\t/* bDescriptorType */`;
-                        byteCount += 1;
+                            stringTmp += `\r\n0x24,\t/* bDescriptorType */`;
+                            byteCount += 1;
 
-                        stringTmp += `\r\n0x01,\t/* bDescriptorSubtype */`;
-                        byteCount += 1;
+                            stringTmp += `\r\n0x01,\t/* bDescriptorSubtype */`;
+                            byteCount += 1;
 
-                        stringTmp += `\r\n0x00,\t/* bmCapabilities */`;
-                        byteCount += 1;
+                            stringTmp += `\r\n0x00,\t/* bmCapabilities */`;
+                            byteCount += 1;
 
-                        stringTmp += `\r\n${interfaceNum + 1},\t/* bDataInterface */`;
-                        byteCount += 1;
+                            stringTmp += `\r\n${interfaceNum + 1},\t/* bDataInterface */`;
+                            byteCount += 1;
 
-                        stringTmp += `\r\n0x04,\t/* bLength */`;
-                        byteCount += 1;
+                            stringTmp += `\r\n0x04,\t/* bLength */`;
+                            byteCount += 1;
 
-                        stringTmp += `\r\n0x24,\t/* bDescriptorType */`;
-                        byteCount += 1;
+                            stringTmp += `\r\n0x24,\t/* bDescriptorType */`;
+                            byteCount += 1;
 
-                        stringTmp += `\r\n0x02,\t/* bDescriptorSubtype */`;
-                        byteCount += 1;
+                            stringTmp += `\r\n0x02,\t/* bDescriptorSubtype */`;
+                            byteCount += 1;
 
-                        stringTmp += `\r\n0x02,\t/* bmCapabilities */`;
-                        byteCount += 1;
+                            stringTmp += `\r\n0x02,\t/* bmCapabilities */`;
+                            byteCount += 1;
 
-                        stringTmp += `\r\n0x05,\t/* bLength */`;
-                        byteCount += 1;
+                            stringTmp += `\r\n0x05,\t/* bLength */`;
+                            byteCount += 1;
 
-                        stringTmp += `\r\n0x24,\t/* bDescriptorType */`;
-                        byteCount += 1;
+                            stringTmp += `\r\n0x24,\t/* bDescriptorType */`;
+                            byteCount += 1;
 
-                        stringTmp += `\r\n0x06,\t/* bDescriptorSubtype */`;
-                        byteCount += 1;
+                            stringTmp += `\r\n0x06,\t/* bDescriptorSubtype */`;
+                            byteCount += 1;
 
-                        stringTmp += `\r\n${interfaceNum},\t/* bMasterInterface */`;
-                        byteCount += 1;
+                            stringTmp += `\r\n${interfaceNum},\t/* bMasterInterface */`;
+                            byteCount += 1;
 
-                        stringTmp += `\r\n${interfaceNum + 1},\t/* bSlaveInterface0 */`;
-                        byteCount += 1;
+                            stringTmp += `\r\n${interfaceNum + 1},\t/* bSlaveInterface0 */`;
+                            byteCount += 1;
 
-                        stringTmp += `\r\n0x07,\t/* bLength */`;
-                        byteCount += 1;
+                            stringTmp += `\r\n0x07,\t/* bLength */`;
+                            byteCount += 1;
 
-                        stringTmp += `\r\n0x05,\t/* bDescriptorType */`;
-                        byteCount += 1;
+                            stringTmp += `\r\n0x05,\t/* bDescriptorType */`;
+                            byteCount += 1;
 
-                        stringTmp += `\r\n0x${toHexFormat(IntEpAddr)},\t/* bEndpointAddress */`;
-                        byteCount += 1;
+                            stringTmp += `\r\n0x${toHexFormat(IntEpAddr)},\t/* bEndpointAddress */`;
+                            byteCount += 1;
 
-                        stringTmp += `\r\n0x03,\t/* bmAttributes */`;
-                        byteCount += 1;
+                            stringTmp += `\r\n0x03,\t/* bmAttributes */`;
+                            byteCount += 1;
 
-                        stringTmp += `\r\n0x08, 0x00,\t/* wMaxPacketSize */`;
-                        byteCount += 2;
+                            stringTmp += `\r\n0x08, 0x00,\t/* wMaxPacketSize */`;
+                            byteCount += 2;
 
-                        stringTmp += `\r\n0x01,\t/* bInterval */`;
-                        byteCount += 1;
+                            stringTmp += `\r\n0x01,\t/* bInterval */`;
+                            byteCount += 1;
 
-                        stringTmp += `\r\n0x09,\t/* bLength */`;
-                        byteCount += 1;
+                            stringTmp += `\r\n0x09,\t/* bLength */`;
+                            byteCount += 1;
 
-                        stringTmp += `\r\n0x04,\t/* bDescriptorType */`;
-                        byteCount += 1;
+                            stringTmp += `\r\n0x04,\t/* bDescriptorType */`;
+                            byteCount += 1;
 
-                        stringTmp += `\r\n${interfaceNum + 1},\t/* bInterfaceNumber */`;
-                        byteCount += 1;
+                            stringTmp += `\r\n${interfaceNum + 1},\t/* bInterfaceNumber */`;
+                            byteCount += 1;
 
-                        stringTmp += `\r\n0x00,\t/* bAlternateSetting */`;
-                        byteCount += 1;
+                            stringTmp += `\r\n0x00,\t/* bAlternateSetting */`;
+                            byteCount += 1;
 
-                        stringTmp += `\r\n0x02,\t/* bNumEndpoints */`;
-                        byteCount += 1;
+                            stringTmp += `\r\n0x02,\t/* bNumEndpoints */`;
+                            byteCount += 1;
 
-                        stringTmp += `\r\n0x0A,\t/* bInterfaceClass */`;
-                        byteCount += 1;
+                            stringTmp += `\r\n0x0A,\t/* bInterfaceClass */`;
+                            byteCount += 1;
 
-                        stringTmp += `\r\n0x00,\t/* bInterfaceSubClass */`;
-                        byteCount += 1;
+                            stringTmp += `\r\n0x00,\t/* bInterfaceSubClass */`;
+                            byteCount += 1;
 
-                        stringTmp += `\r\n0x00,\t/* bInterfaceProtocol */`;
-                        byteCount += 1;
+                            stringTmp += `\r\n0x00,\t/* bInterfaceProtocol */`;
+                            byteCount += 1;
 
-                        stringTmp += `\r\n0x00,\t/* iInterface */`;
-                        byteCount += 1;
+                            stringTmp += `\r\n0x00,\t/* iInterface */`;
+                            byteCount += 1;
 
-                        stringTmp += `\r\n0x07,\t/* bLength */`;
-                        byteCount += 1;
+                            stringTmp += `\r\n0x07,\t/* bLength */`;
+                            byteCount += 1;
 
-                        stringTmp += `\r\n0x05,\t/* bDescriptorType */`;
-                        byteCount += 1;
+                            stringTmp += `\r\n0x05,\t/* bDescriptorType */`;
+                            byteCount += 1;
 
-                        stringTmp += `\r\n0x${toHexFormat(OutEpAddr)},\t/* bEndpointAddress */`;
-                        byteCount += 1;
+                            stringTmp += `\r\n0x${toHexFormat(OutEpAddr)},\t/* bEndpointAddress */`;
+                            byteCount += 1;
 
-                        stringTmp += `\r\n0x02,\t/* bmAttributes */`;
-                        byteCount += 1;
+                            stringTmp += `\r\n0x02,\t/* bmAttributes */`;
+                            byteCount += 1;
 
-                        stringTmp += `\r\n0x${toHexFormat(MaxMps & 0xFF)}, 0x${toHexFormat(MaxMps >> 8)},\t/* wMaxPacketSize */`;
-                        byteCount += 2; // WBVAL占用2字节
+                            stringTmp += `\r\n0x${toHexFormat(MaxMps & 0xFF)}, 0x${toHexFormat(MaxMps >> 8)},\t/* wMaxPacketSize */`;
+                            byteCount += 2; // WBVAL占用2字节
 
-                        stringTmp += `\r\n0x00,\t/* bInterval */`;
-                        byteCount += 1;
+                            stringTmp += `\r\n0x00,\t/* bInterval */`;
+                            byteCount += 1;
 
-                        stringTmp += `\r\n0x07,\t/* bLength */`;
-                        byteCount += 1;
+                            stringTmp += `\r\n0x07,\t/* bLength */`;
+                            byteCount += 1;
 
-                        stringTmp += `\r\n0x05,\t/* bDescriptorType */`;
-                        byteCount += 1;
+                            stringTmp += `\r\n0x05,\t/* bDescriptorType */`;
+                            byteCount += 1;
 
-                        stringTmp += `\r\n0x${toHexFormat(InEpAddr)},\t/* bEndpointAddress */`;
-                        byteCount += 1;
+                            stringTmp += `\r\n0x${toHexFormat(InEpAddr)},\t/* bEndpointAddress */`;
+                            byteCount += 1;
 
-                        stringTmp += `\r\n0x02,\t/* bmAttributes */`;
-                        byteCount += 1;
+                            stringTmp += `\r\n0x02,\t/* bmAttributes */`;
+                            byteCount += 1;
 
-                        stringTmp += `\r\n0x${toHexFormat(MaxMps & 0xFF)}, 0x${toHexFormat(MaxMps >> 8)},\t/* wMaxPacketSize */`;
-                        byteCount += 2;
+                            stringTmp += `\r\n0x${toHexFormat(MaxMps & 0xFF)}, 0x${toHexFormat(MaxMps >> 8)},\t/* wMaxPacketSize */`;
+                            byteCount += 2;
 
-                        stringTmp += `\r\n0x00,\t/* bInterval */`;
-                        byteCount += 1;
-
+                            stringTmp += `\r\n0x00,\t/* bInterval */`;
+                            byteCount += 1;
+                        }
                         interfaceConfigString[i] = stringTmp + `\r\n`;
                         interfaceConfigTotalLength += byteCount;
                         interfaceNum += 2;
+                    }
+                    break;
+
+                case "WinUSB":
+                    {
+                        const InEpEnabled = interfaceNode.getElementsByClassName("WinUSB_Enabled_InEp")[0].checked;
+                        const OutEpEnabled = interfaceNode.getElementsByClassName("WinUSB_Enabled_OutEp")[0].checked;
+                        const InEpAddr = interfaceNode.getElementsByClassName("InEpAddr")[0].value | 0x80;
+                        const OutEpAddr = interfaceNode.getElementsByClassName("OutEpAddr")[0].value | 0x00;
+                        const RxLength = interfaceNode.getElementsByClassName("WinUSB_RX_Length")[0].value * 1;
+                        const TxLength = interfaceNode.getElementsByClassName("WinUSB_TX_Length")[0].value * 1;
+                        let stringLen = 0;
+                        let stringTmp = "";
+
+                        if (!InEpEnabled && !OutEpEnabled) {
+                            continue;
+                        }
+
+                        interfaceInfo[i] = {};
+                        interfaceInfo[i]["Type"] = "WinUSB";
+                        interfaceInfo[i]["InEpEnabled"] = InEpEnabled;
+                        interfaceInfo[i]["OutEpEnabled"] = OutEpEnabled;
+                        interfaceInfo[i]["InEpAddr"] = InEpAddr;
+                        interfaceInfo[i]["OutEpAddr"] = OutEpAddr;
+                        interfaceInfo[i]["RxLength"] = RxLength;
+                        interfaceInfo[i]["TxLength"] = TxLength;
+
+                        {
+                            stringTmp = "\r\n/* WinUSB */\r\n";
+                            stringTmp += "\r\n/* Interface */\r\n";
+                            stringTmp += `0x09,\t\t\t// bLength\r\n`;
+                            stringLen += 1;
+                            stringTmp += `0x04,\t\t\t// bDescriptorType (Interface)\r\n`;
+                            stringLen += 1;
+                            stringTmp += `0x${toHexFormat(interfaceNum)},\t\t\t// bInterfaceNumber: Interface number\r\n`;
+                            stringLen += 1;
+                            stringTmp += `0x00,\t\t\t// bAlternateSetting: Alternate setting\r\n`;
+                            stringLen += 1;
+                            stringTmp += `0x${toHexFormat((InEpEnabled ? 1 : 0) + (OutEpEnabled ? 1 : 0))},\t\t\t// bNumEndpoints\r\n`;
+                            stringLen += 1;
+                            stringTmp += `0xFF,\t\t\t// bInterfaceClass\r\n`;
+                            stringLen += 1;
+                            stringTmp += `0xFF,\t\t\t// bInterfaceSubClass\r\n`;
+                            stringLen += 1;
+                            stringTmp += `0x00,\t\t\t// bInterfaceProtocol\r\n`;
+                            stringLen += 1;
+                            stringTmp += `0x04,\t\t\t// iInterface: Index of string descriptor\r\n`;
+                            stringLen += 1;
+
+                            if (InEpEnabled) {
+                                stringTmp += "\r\n/* Input Endpoint Descriptor */\r\n";
+                                stringTmp += `0x07,\t\t\t// bLength\r\n`;
+                                stringLen += 1;
+                                stringTmp += `0x05,\t\t\t// bDescriptorType (Endpoint)\r\n`;
+                                stringLen += 1;
+                                stringTmp += `0x${toHexFormat(InEpAddr)},\t\t\t// bEndpointAddress\r\n`;
+                                stringLen += 1;
+                                stringTmp += `0x02,\t\t\t// bmAttributes: bulk endpoint\r\n`;
+                                stringLen += 1;
+                                stringTmp += `0x40, 0x00,\t// wMaxPacketSize\r\n`;
+                                stringLen += 2;
+                                stringTmp += `0x00,\t\t\t// binterval * 1ms\r\n`;
+                                stringLen += 1;
+                            }
+
+                            if (OutEpEnabled) {
+                                stringTmp += "\r\n/* Input Endpoint Descriptor */\r\n";
+                                stringTmp += `0x07,\t\t\t// bLength\r\n`;
+                                stringLen += 1;
+                                stringTmp += `0x05,\t\t\t// bDescriptorType (Endpoint)\r\n`;
+                                stringLen += 1;
+                                stringTmp += `0x${toHexFormat(OutEpAddr)},\t\t\t// bEndpointAddress\r\n`;
+                                stringLen += 1;
+                                stringTmp += `0x02,\t\t\t// bmAttributes: bulk endpoint\r\n`;
+                                stringLen += 1;
+                                stringTmp += `0x40, 0x00,\t// wMaxPacketSize\r\n`;
+                                stringLen += 2;
+                                stringTmp += `0x00,\t\t\t// binterval * 1ms\r\n`;
+                                stringLen += 1;
+                            }
+                        }
+                        interfaceConfigString[i] = stringTmp + `\r\n`;
+                        interfaceConfigTotalLength += stringLen;
+
+                        {
+                            //WinUSB descriptor
+                            stringTmp = "\r\n/* WinUSB Descriptor*/\r\n";
+                            stringTmp += `\
+                            \r\n#pragma pack(4)
+                            \r\nconst unsigned char Intf${interfaceNum}_WCID_StringDescriptor_MSOS[18] = {\
+                            \r\n///////////////////////////////////////\
+                            \r\n/// MS OS string descriptor\
+                            \r\n///////////////////////////////////////\
+                            \r\n0x12,   /* bLength */\
+                            \r\n0x03,   /* bDescriptorType */\
+                            \r\n/* MSFT100 */\
+                            \r\n'M', 0x00, 'S', 0x00, 'F', 0x00, 'T', 0x00, /* wcChar_7 */\
+                            \r\n'1', 0x00, '0', 0x00, '0', 0x00,            /* wcChar_7 */\
+                            \r\n0x17,                                       /* bVendorCode */\
+                            \r\n0x00,                                       /* bReserved */\
+                            \r\n};\
+                            \r\n\
+                            \r\nconst unsigned char Intf${interfaceNum}_WINUSB_WCIDDescriptor[40] = {
+                            \r\n///////////////////////////////////////\
+                            \r\n/// WCID descriptor\
+                            \r\n///////////////////////////////////////\
+                            \r\n0x28, 0x00, 0x00, 0x00,                   /* dwLength */\
+                            \r\n0x00, 0x01,                               /* bcdVersion */\
+                            \r\n0x04, 0x00,                               /* wIndex */\
+                            \r\n0x01,                                     /* bCount */\
+                            \r\n0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, /* bReserved_7 */\
+                            \r\n\
+                            \r\n///////////////////////////////////////\
+                            \r\n/// WCID function descriptor\
+                            \r\n///////////////////////////////////////\
+                            \r\n0x00, /* bFirstInterfaceNumber */\
+                            \r\n0x01, /* bReserved */\
+                            \r\n/* WINUSB */\
+                            \r\n'W', 'I', 'N', 'U', 'S', 'B', 0x00, 0x00, /* cCID_8 */\
+                            \r\n/*  */\
+                            \r\n0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, /* cSubCID_8 */\
+                            \r\n0x00, 0x00, 0x00, 0x00, 0x00, 0x00,             /* bReserved_6 */\
+                            \r\n};\
+                            \r\n\
+                            \r\nconst unsigned char Intf${interfaceNum}_WINUSB_IF0_WCIDProperties [142] = {\
+                            \r\n///////////////////////////////////////\
+                            \r\n/// WCID property descriptor\
+                            \r\n///////////////////////////////////////\
+                            \r\n0x8e, 0x00, 0x00, 0x00,                           /* dwLength */\
+                            \r\n0x00, 0x01,                                       /* bcdVersion */\
+                            \r\n0x05, 0x00,                                       /* wIndex */\
+                            \r\n0x01, 0x00,                                       /* wCount */\
+                            \r\n\
+                            \r\n///////////////////////////////////////\
+                            \r\n/// registry propter descriptor\
+                            \r\n///////////////////////////////////////\
+                            \r\n0x84, 0x00, 0x00, 0x00,                           /* dwSize */\
+                            \r\n0x01, 0x00, 0x00, 0x00,                           /* dwPropertyDataType */\
+                            \r\n0x28, 0x00,                                       /* wPropertyNameLength */\
+                            \r\n/* DeviceInterfaceGUID */\
+                            \r\n'D', 0x00, 'e', 0x00, 'v', 0x00, 'i', 0x00,       /* wcName_20 */\
+                            \r\n'c', 0x00, 'e', 0x00, 'I', 0x00, 'n', 0x00,       /* wcName_20 */\
+                            \r\n't', 0x00, 'e', 0x00, 'r', 0x00, 'f', 0x00,       /* wcName_20 */\
+                            \r\n'a', 0x00, 'c', 0x00, 'e', 0x00, 'G', 0x00,       /* wcName_20 */\
+                            \r\n'U', 0x00, 'I', 0x00, 'D', 0x00, 0x00, 0x00,      /* wcName_20 */\
+                            \r\n0x4e, 0x00, 0x00, 0x00,                           /* dwPropertyDataLength */\
+                            \r\n/* {1D4B2365-4749-48EA-B38A-7C6FDDDD7E26} */\
+                            \r\n'{', 0x00, '1', 0x00, 'D', 0x00, '4', 0x00,       /* wcData_39 */\
+                            \r\n'B', 0x00, '2', 0x00, '3', 0x00, '6', 0x00,       /* wcData_39 */\
+                            \r\n'5', 0x00, '-', 0x00, '4', 0x00, '7', 0x00,       /* wcData_39 */\
+                            \r\n'4', 0x00, '9', 0x00, '-', 0x00, '4', 0x00,       /* wcData_39 */\
+                            \r\n'8', 0x00, 'E', 0x00, 'A', 0x00, '-', 0x00,       /* wcData_39 */\
+                            \r\n'B', 0x00, '3', 0x00, '8', 0x00, 'A', 0x00,       /* wcData_39 */\
+                            \r\n'-', 0x00, '7', 0x00, 'C', 0x00, '6', 0x00,       /* wcData_39 */\
+                            \r\n'F', 0x00, 'D', 0x00, 'D', 0x00, 'D', 0x00,       /* wcData_39 */\
+                            \r\n'D', 0x00, '7', 0x00, 'E', 0x00, '2', 0x00,       /* wcData_39 */\
+                            \r\n'6', 0x00, '}', 0x00, 0x00, 0x00,                 /* wcData_39 */\
+                            \r\n};\
+                            \r\n\
+                            \r\nconst unsigned char *Intf${interfaceNum}_WINUSB_IFx_WCIDProperties[] = {\
+                            \r\n    Intf${interfaceNum}_WINUSB_IF0_WCIDProperties,\
+                            \r\n};\
+                            \r\n\
+                            \r\n#pragma pack(0)\
+                            \r\n\
+                            `;
+
+                            interfaceInfo[i]["msosv1_desc"] = stringTmp;
+
+                        }
+
+                        interfaceNum += 1;
                     }
                     break;
 
@@ -1574,7 +1869,6 @@ function generateCode() {
     let defineString = "";
     if (interfaceInfo.length) {
         let InterfaceNum = 0;
-        let intefaceContenStringStart = DescriptorLength;
         defineString = `\
         \r\n.Descriptor.buffer = USBD_DESC,\
         \r\n.Descriptor.Length = ${DescriptorLength},\
@@ -1694,6 +1988,65 @@ function generateCode() {
                         InterfaceNum += 2;
                     }
                     break;
+
+                case "WinUSB":
+                    {
+                        let inputString = "";
+                        let outputString = "";
+
+                        if (interfaceInfo[i]["InEpEnabled"]) {
+                            inputString = `\
+                            \r\nstruct\
+                            \r\n{\
+                            \r\nconst unsigned int Address : 8;\
+                            \r\nconst unsigned int Size : 24;\
+                            \r\n} InEndpoint;\
+                            `;
+                        }
+
+                        if (interfaceInfo[i]["OutEpEnabled"]) {
+                            outputString = `\
+                            \r\nstruct\
+                            \r\n{\
+                            \r\nconst unsigned int Address : 8;\
+                            \r\nconst unsigned int Size : 24;\
+                            \r\n} OutEndpoint;\
+                            `;
+                        }
+
+                        stringTmp = `\
+                            \r\nstruct\
+                            \r\n{\
+                            \r\nunsigned char Type; // 0 = HID, 1 = CDC-ACM, 2 = WinUSB\
+                            \r\nconst unsigned char *WCID_StringDescriptor_MSOS;\
+                            \r\nconst unsigned char *WINUSB_WCIDDescriptor;\
+                            \r\nconst unsigned char **WINUSB_IFx_WCIDProperties;\
+                            ${inputString}\
+                            ${outputString}\
+                            \r\n} Intf${InterfaceNum};\r\n\
+                            `;
+
+                        defineString += `\
+                        \r\n.Intf${InterfaceNum}.Type = 2,\
+                        \r\n.Intf${InterfaceNum}.WCID_StringDescriptor_MSOS = Intf${InterfaceNum}_WCID_StringDescriptor_MSOS,\
+                        \r\n.Intf${InterfaceNum}.WINUSB_WCIDDescriptor = Intf${InterfaceNum}_WINUSB_WCIDDescriptor,\
+                        \r\n.Intf${InterfaceNum}.WINUSB_IFx_WCIDProperties = Intf${InterfaceNum}_WINUSB_IFx_WCIDProperties,\
+                        \r\n${interfaceInfo[i]["InEpEnabled"] ? `\
+                            \r\n.Intf${InterfaceNum}.InEndpoint.Address = 0x${toHexFormat(interfaceInfo[i]["InEpAddr"])},\
+                            \r\n.Intf${InterfaceNum}.InEndpoint.Size = 64,\
+                            ` : ""}\
+                        \r\n${interfaceInfo[i]["OutEpEnabled"] ? `\
+                            \r\n.Intf${InterfaceNum}.OutEndpoint.Address = 0x${toHexFormat(interfaceInfo[i]["OutEpAddr"])},\
+                            \r\n.Intf${InterfaceNum}.OutEndpoint.Size = 64,\
+                            ` : ""}\
+                        `;
+
+                        InterfaceNum += 1;
+                    }
+                    break;
+
+                default:
+                    break;
             }
             typedefString += stringTmp;
         }
@@ -1751,6 +2104,8 @@ function generateCode() {
                         \r\n};\
                         \r\n\
                         `;
+                    } else if (interfaceInfo[i]["Type"] == "WinUSB") {
+                        stringTmp += interfaceInfo[i]["msosv1_desc"];
                     }
                 }
                 return stringTmp;
@@ -1789,6 +2144,8 @@ function generateCode() {
     let USBD_Intf_Init_String = "";
     let USBD_Ep_Init_String = "";
     let USBD_TypeDef_Init_String = "";
+    let USBD_TypeDef_InitInFunc_String = "";
+    let USBD_Intf_Write_Function_String = "";
     let USBD_Init_String = `\r\nusbd_desc_register(USBD_BUSID, usbddesc.Descriptor.buffer);`;
     hFileData = "";
     cFileData = "";
@@ -1796,6 +2153,7 @@ function generateCode() {
     typedefString = "";
 
     cFileData = `#include "${devicehFileName}"\
+    \r\n#include "${hFileName}"\
     \r\n\
     \r\n#if defined(STM32F0) || defined(STM32L0) || defined(STM32G4) || defined(STM32F1)\
     \r\nvoid usb_dc_low_level_init(void)\
@@ -1920,8 +2278,6 @@ function generateCode() {
                     {
                         USBD_Intf_Init_String += `\r\nstatic struct usbd_interface Intf${InterfaceNum} = {0};`;
 
-                        functionDefString += `\r\nvoid USBD_Intf${InterfaceNum}_InEp0_Callback(uint8_t busid, uint8_t ep, uint32_t nbytes);`;
-
                         USBD_Init_String += `\
                         \r\nusbd_add_interface(\
                         \r\n      USBD_BUSID,\
@@ -1954,7 +2310,7 @@ function generateCode() {
                             `;
 
                             USBD_Ep_Callback_String += `\
-                            \r\n__weak void USBD_Intf${InterfaceNum}_InEp0_Callback(uint8_t busid, uint8_t ep, uint32_t nbytes)\
+                            \r\nstatic void USBD_Intf${InterfaceNum}_InEp0_Callback(uint8_t busid, uint8_t ep, uint32_t nbytes)\
                             \r\n{\
                             \r\nusbd.Intf${InterfaceNum}.Input.State = USBD_STATE_IDLE;\
                             \r\n}\
@@ -1973,6 +2329,19 @@ function generateCode() {
                                     \r\n} VendorDefine;\
                                     `;
                                 }
+
+                                USBD_Intf_Write_Function_String += `\
+                                \r\nint USBD_Intf${InterfaceNum}_VendorApp_Input(void)\
+                                \r\n{\
+                                \r\n    return USBD_InEp_Write(\
+                                \r\n        USBD_BUSID,\
+                                \r\n        usbd.Intf${InterfaceNum}.Input.Address,\
+                                \r\n        (uint8_t *)&usbd.Intf${InterfaceNum}.Input.Frame.VendorDefine,\
+                                \r\n        sizeof(usbd.Intf${InterfaceNum}.Input.Frame.VendorDefine),\
+                                \r\n        &usbd.Intf${InterfaceNum}.Input.State);\
+                                \r\n}\
+                                \r\n`;
+                                functionDefString += `\r\nint USBD_Intf${InterfaceNum}_VendorApp_Input(void);`;
                             }
 
                             //Mouse
@@ -2016,6 +2385,19 @@ function generateCode() {
                                 ${interfaceInfo[i]["Mouse"]["AcPan"]["Enabled"] ? "\r\nchar AcPan;" : ""}\
                                 \r\n} Mouse;\
                                 \r\n`;
+
+                                USBD_Intf_Write_Function_String += `\
+                                \r\nint USBD_Intf${InterfaceNum}_Mouse_Input(void)\
+                                \r\n{\
+                                \r\n    return USBD_InEp_Write(\
+                                \r\n        USBD_BUSID,\
+                                \r\n        usbd.Intf${InterfaceNum}.Input.Address,\
+                                \r\n        (uint8_t *)&usbd.Intf${InterfaceNum}.Input.Frame.Mouse,\
+                                \r\n        sizeof(usbd.Intf${InterfaceNum}.Input.Frame.Mouse),\
+                                \r\n        &usbd.Intf${InterfaceNum}.Input.State);\
+                                \r\n}\
+                                \r\n`;
+                                functionDefString += `\r\nint USBD_Intf${InterfaceNum}_Mouse_Input(void);`;
                             }
 
                             //Keyboard
@@ -2043,6 +2425,19 @@ function generateCode() {
                                 \r\nunsigned char NormalKey[${interfaceInfo[i]["Keyboard"]["NormalKey"]["Number"]}];\
                                 \r\n} Keyboard; \
                                 \r\n`;
+
+                                USBD_Intf_Write_Function_String += `\
+                                \r\nint USBD_Intf${InterfaceNum}_Keyboard_Input(void)\
+                                \r\n{\
+                                \r\n    return USBD_InEp_Write(\
+                                \r\n        USBD_BUSID,\
+                                \r\n        usbd.Intf${InterfaceNum}.Input.Address,\
+                                \r\n        (uint8_t *)&usbd.Intf${InterfaceNum}.Input.Frame.Keyboard,\
+                                \r\n        sizeof(usbd.Intf${InterfaceNum}.Input.Frame.Keyboard),\
+                                \r\n        &usbd.Intf${InterfaceNum}.Input.State);\
+                                \r\n}\
+                                \r\n`;
+                                functionDefString += `\r\nint USBD_Intf${InterfaceNum}_Keyboard_Input(void);`;
                             }
 
                             //Consumer
@@ -2057,6 +2452,19 @@ function generateCode() {
                                 \r\nunsigned short Key[${interfaceInfo[i]["Consumer"]["Key"]["Number"]}];\
                                 \r\n} Consumer;\
                                 \r\n`;
+
+                                USBD_Intf_Write_Function_String += `\
+                                \r\nint USBD_Intf${InterfaceNum}_Consumer_Input(void)\
+                                \r\n{\
+                                \r\n    return USBD_InEp_Write(\
+                                \r\n        USBD_BUSID,\
+                                \r\n        usbd.Intf${InterfaceNum}.Input.Address,\
+                                \r\n        (uint8_t *)&usbd.Intf${InterfaceNum}.Input.Frame.Consumer,\
+                                \r\n        sizeof(usbd.Intf${InterfaceNum}.Input.Frame.Consumer),\
+                                \r\n        &usbd.Intf${InterfaceNum}.Input.State);\
+                                \r\n}\
+                                \r\n`;
+                                functionDefString += `\r\nint USBD_Intf${InterfaceNum}_Consumer_Input(void);`;
                             }
 
                             haveReportId = VendorDefineReportId | MouseReportId | KeyboardReportId | ConsumerReportId;
@@ -2106,8 +2514,6 @@ function generateCode() {
                             let haveReportId = 0;
                             let VendorDefineReportId = 0;
 
-                            functionDefString += `\r\nvoid USBD_Intf${InterfaceNum}_OutEp0_Callback(uint8_t busid, uint8_t ep, uint32_t nbytes);`;
-
                             USBD_Ep_Init_String += `\
                             \r\nstatic struct usbd_endpoint Intf${InterfaceNum}OutEp0 = {\
                             \r\n.ep_addr = 0x${toHexFormat(interfaceInfo[i]["Endpoint"]["Out"]["Addr"])},\
@@ -2120,7 +2526,7 @@ function generateCode() {
                             `;
 
                             USBD_Ep_Callback_String += `\
-                            \r\n__weak void USBD_Intf${InterfaceNum}_OutEp0_Callback(uint8_t busid, uint8_t ep, uint32_t nbytes)\
+                            \r\nstatic void USBD_Intf${InterfaceNum}_OutEp0_Callback(uint8_t busid, uint8_t ep, uint32_t nbytes)\
                             \r\n{\
                             \r\nusbd.Intf${InterfaceNum}.Output.State = 1;\               
                             \r\nusbd_ep_start_read(\
@@ -2241,14 +2647,13 @@ function generateCode() {
                         \r\n} IntEndpoint;\
                         `;
 
-
-                        functionDefString += `\r\nvoid USBD_Intf${InterfaceNum}_IntEp0_Callback(uint8_t busid, uint8_t ep, uint32_t nbytes);`;
                         USBD_Ep_Init_String += `\
                             \r\nstatic struct usbd_endpoint Intf${InterfaceNum}IntEp0 = {\
                             \r\n.ep_addr = 0x${toHexFormat(interfaceInfo[i]["IntEpAddr"])},\
                             \r\n.ep_cb = USBD_Intf${InterfaceNum}_IntEp0_Callback,\
                             \r\n};\
                             `;
+
                         USBD_Init_String += `\
                         \r\nusbd_add_interface(\
                         \r\n      USBD_BUSID,\
@@ -2261,11 +2666,24 @@ function generateCode() {
                             `;
 
                         USBD_Ep_Callback_String += `\
-                            \r\n__weak void USBD_Intf${InterfaceNum}_IntEp0_Callback(uint8_t busid, uint8_t ep, uint32_t nbytes)\
+                            \r\nstatic void USBD_Intf${InterfaceNum}_IntEp0_Callback(uint8_t busid, uint8_t ep, uint32_t nbytes)\
                             \r\n{\
                             \r\nusbd.Intf${InterfaceNum}.IntEndpoint.State = USBD_STATE_IDLE;\
                             \r\n}\
                             `;
+
+                        USBD_Intf_Write_Function_String += `\
+                        \r\nint USBD_Intf${InterfaceNum}_CDC_ACM_Int_Input(void)\
+                        \r\n{\
+                        \r\n    return USBD_InEp_Write(\
+                        \r\n        USBD_BUSID,\
+                        \r\n        usbd.Intf${InterfaceNum}.IntEndpoint.Address,\
+                        \r\n        (uint8_t *)&usbd.Intf${InterfaceNum}.IntEndpoint.State,\
+                        \r\n        sizeof(usbd.Intf${InterfaceNum}.IntEndpoint.State),\
+                        \r\n        &usbd.Intf${InterfaceNum}.IntEndpoint.State);\
+                        \r\n}\
+                        \r\n`;
+                        functionDefString += `\r\nint USBD_Intf${InterfaceNum}_CDC_ACM_Int_Input(void);`;
 
                         inputTypeDefString = `\
                         \r\nstruct {\
@@ -2275,8 +2693,6 @@ function generateCode() {
                         \r\nuint8_t Buffer[${interfaceInfo[i]["TxLength"]}];\
                         \r\n} InEndpoint;\
                         `;
-
-                        functionDefString += `\r\nvoid USBD_Intf${InterfaceNum + 1}_InEp0_Callback(uint8_t busid, uint8_t ep, uint32_t nbytes);`;
 
                         USBD_Ep_Init_String += `\
                             \r\nstatic struct usbd_endpoint Intf${InterfaceNum + 1}InEp0 = {\
@@ -2292,12 +2708,13 @@ function generateCode() {
                         \r\n      USBD_BUSID,\
                         \r\n      &Intf${InterfaceNum + 1}));\
                         `;
+
                         USBD_Init_String += `\
                             \r\nusbd_add_endpoint(USBD_BUSID, &Intf${InterfaceNum + 1}InEp0);\
                             `;
 
                         USBD_Ep_Callback_String += `\
-                            \r\n__weak void USBD_Intf${InterfaceNum + 1}_InEp0_Callback(uint8_t busid, uint8_t ep, uint32_t nbytes)\
+                            \r\nstatic void USBD_Intf${InterfaceNum + 1}_InEp0_Callback(uint8_t busid, uint8_t ep, uint32_t nbytes)\
                             \r\n{\
                             \r\n    if (((nbytes & (${interfaceInfo[i]["MaxMps"]} - 1)) == 0) && nbytes) {\
                             \r\n        /* send zlp */\
@@ -2308,6 +2725,23 @@ function generateCode() {
                             \r\n}\
                             `;
 
+                        USBD_Intf_Write_Function_String += `\
+                        \r\nint USBD_Intf${InterfaceNum + 1}_CDC_ACM_Data_Input(size_t Length)\
+                        \r\n{\
+                        \r\n    Length = Length > sizeof(usbd.Intf${InterfaceNum + 1}.InEndpoint.Buffer)\
+                        \r\n        ? sizeof(usbd.Intf${InterfaceNum + 1}.InEndpoint.Buffer) \
+                        \r\n        : Length;\
+                        \r\n\
+                        \r\n    return USBD_InEp_Write(\
+                        \r\n        USBD_BUSID,\
+                        \r\n        usbd.Intf${InterfaceNum + 1}.InEndpoint.Address,\
+                        \r\n        (uint8_t *)&usbd.Intf${InterfaceNum + 1}.InEndpoint.Buffer,\
+                        \r\n        Length,\
+                        \r\n        &usbd.Intf${InterfaceNum + 1}.InEndpoint.State);\
+                        \r\n}\
+                        \r\n`;
+                        functionDefString += `\r\nint USBD_Intf${InterfaceNum + 1}_CDC_ACM_Data_Input(size_t Length);`;
+
                         outputTypeDefString = `\
                         \r\nstruct {\
                         \r\nconst uint32_t Address : 8;\
@@ -2317,7 +2751,6 @@ function generateCode() {
                         \r\n} OutEndpoint;\
                         `;
 
-                        functionDefString += `\r\nvoid USBD_Intf${InterfaceNum + 1}_OutEp0_Callback(uint8_t busid, uint8_t ep, uint32_t nbytes);`;
                         USBD_Ep_Init_String += `\
                             \r\nstatic struct usbd_endpoint Intf${InterfaceNum + 1}OutEp0 = {\
                             \r\n.ep_addr = 0x${toHexFormat(interfaceInfo[i]["OutEpAddr"])},\
@@ -2329,7 +2762,7 @@ function generateCode() {
                             `;
 
                         USBD_Ep_Callback_String += `\
-                            \r\n__weak void USBD_Intf${InterfaceNum + 1}_OutEp0_Callback(uint8_t busid, uint8_t ep, uint32_t nbytes)\
+                            \r\nstatic void USBD_Intf${InterfaceNum + 1}_OutEp0_Callback(uint8_t busid, uint8_t ep, uint32_t nbytes)\
                             \r\n{\
                             \r\nusbd.Intf${InterfaceNum + 1}.OutEndpoint.State = 1;\
                             \r\nusbd_ep_start_read(\
@@ -2394,6 +2827,154 @@ function generateCode() {
                     }
                     break;
 
+                case "WinUSB":
+                    {
+                        haveWinUSB = true;
+                        USBD_Intf_Init_String += `\r\nstatic struct usbd_interface Intf${InterfaceNum} = {0};`;
+                        let inputTypeDefString = "";
+                        let outputTypeDefString = "";
+
+                        USBD_Init_String += `\
+                        \r\nusbd_msosv1_desc_register(\
+                        \r\n      USBD_BUSID,\
+                        \r\n      &usbd.Intf${InterfaceNum}.msosv1_desc);\
+                        `;
+
+                        USBD_Init_String += `\
+                        \r\nusbd_add_interface(\
+                        \r\n      USBD_BUSID,\
+                        \r\n      &Intf${InterfaceNum});\
+                        `;
+
+                        if (interfaceInfo[i]["InEpEnabled"]) {
+                            inputTypeDefString = `\
+                            \r\nstruct {\
+                            \r\nconst uint32_t Address : 8;\
+                            \r\nconst uint32_t Size : 24;\
+                            \r\n__IO uint8_t State;// Tx done flag\
+                            \r\nuint8_t Buffer[${interfaceInfo[i]["TxLength"]}];\
+                            \r\n} InEndpoint;\
+                            `;
+
+                            USBD_Ep_Init_String += `\
+                            \r\nstatic struct usbd_endpoint Intf${InterfaceNum}InEp0 = {\
+                            \r\n.ep_addr = 0x${toHexFormat(interfaceInfo[i]["InEpAddr"])},\
+                            \r\n.ep_cb = USBD_Intf${InterfaceNum}_InEp0_Callback,\
+                            \r\n};\
+                            `;
+
+                            USBD_Init_String += `\
+                            \r\nusbd_add_endpoint(USBD_BUSID, &Intf${InterfaceNum}InEp0);\
+                            `;
+
+                            USBD_Ep_Callback_String += `\
+                            \r\nstatic void USBD_Intf${InterfaceNum}_InEp0_Callback(uint8_t busid, uint8_t ep, uint32_t nbytes)\
+                            \r\n{\
+                            \r\n    if ((nbytes & (64 - 1)) == 0 && nbytes) {\
+                            \r\n        /* send zlp */\
+                            \r\n        usbd_ep_start_write(busid, ep, NULL, 0);\
+                            \r\n    } else {\
+                            \r\n        usbd.Intf${InterfaceNum}.InEndpoint.State = USBD_STATE_IDLE;\
+                            \r\n    }\
+                            \r\n}\
+                            `;
+
+                            USBD_Intf_Write_Function_String += `\
+                            \r\nint USBD_Intf${InterfaceNum}_WinUSB_Input(size_t Length)\
+                            \r\n{\
+                            \r\n    Length = Length > sizeof(usbd.Intf${InterfaceNum}.InEndpoint.Buffer)\
+                            \r\n        ? sizeof(usbd.Intf${InterfaceNum}.InEndpoint.Buffer) \
+                            \r\n        : Length;\
+                            \r\n\
+                            \r\n    return USBD_InEp_Write(\
+                            \r\n        USBD_BUSID,\
+                            \r\n        usbd.Intf${InterfaceNum}.InEndpoint.Address,\
+                            \r\n        (uint8_t *)&usbd.Intf${InterfaceNum}.InEndpoint.Buffer,\
+                            \r\n        Length,\
+                            \r\n        &usbd.Intf${InterfaceNum}.InEndpoint.State);\
+                            \r\n}\
+                            \r\n`;
+                            functionDefString += `\r\nint USBD_Intf${InterfaceNum}_WinUSB_Input(size_t Length);`;
+                        }
+
+                        if (interfaceInfo[i]["OutEpEnabled"]) {
+                            outputTypeDefString = `\
+                            \r\nstruct {\
+                            \r\nconst uint32_t Address : 8;\
+                            \r\nconst uint32_t Size : 24;\
+                            \r\n__IO uint8_t State;// Rx done flag\
+                            \r\nuint8_t Buffer[${interfaceInfo[i]["RxLength"]}];\
+                            \r\n} OutEndpoint;\
+                            `;
+
+                            USBD_Ep_Init_String += `\
+                            \r\nstatic struct usbd_endpoint Intf${InterfaceNum}OutEp0 = {\
+                            \r\n.ep_addr = 0x${toHexFormat(interfaceInfo[i]["OutEpAddr"])},\
+                            \r\n.ep_cb = USBD_Intf${InterfaceNum}_OutEp0_Callback,\
+                            \r\n};\
+                            `;
+
+                            USBD_Init_String += `\
+                            \r\nusbd_add_endpoint(USBD_BUSID, &Intf${InterfaceNum}OutEp0);\
+                            `;
+
+                            USBD_Event_Handler_String += `\
+                            \r\nusbd_ep_start_read(\
+                            \r\n\tUSBD_BUSID,\
+                            \r\n\tusbd.Intf${InterfaceNum}.OutEndpoint.Address,\
+                            \r\n\tusbd.Intf${InterfaceNum}.OutEndpoint.Buffer,\
+                            \r\n\tsizeof(usbd.Intf${InterfaceNum}.OutEndpoint.Buffer));\
+                            `;
+
+                            USBD_Ep_Callback_String += `\
+                            \r\nstatic void USBD_Intf${InterfaceNum}_OutEp0_Callback(uint8_t busid, uint8_t ep, uint32_t nbytes)\
+                            \r\n{\
+                            \r\nusbd.Intf${InterfaceNum}.OutEndpoint.State = 1;\
+                            \r\nusbd_ep_start_read(\
+                            \r\n\tUSBD_BUSID,\
+                            \r\n\tusbd.Intf${InterfaceNum}.OutEndpoint.Address,\
+                            \r\n\tusbd.Intf${InterfaceNum}.OutEndpoint.Buffer,\
+                            \r\n\tsizeof(usbd.Intf${InterfaceNum}.OutEndpoint.Buffer));\
+                            \r\n}\
+                            `;
+                        }
+
+
+                        typedefString += `\
+                        \r\nstruct\
+                        \r\n{\
+                        \r\nconst uint8_t Type; // 0 = HID, 1 = CDC-ACM, 2 = WinUSB\
+                        \r\nstruct usb_msosv1_descriptor msosv1_desc;\
+                        ${inputTypeDefString}\
+                        ${outputTypeDefString}\
+                        \r\n} Intf${InterfaceNum};\r\n\
+                        `;
+
+                        USBD_TypeDef_Init_String += `\
+                        \r\n.Intf${InterfaceNum}.Type = 2,\
+                        \r\n.Intf${InterfaceNum}.msosv1_desc.vendor_code = 0x17,\
+                        ${interfaceInfo[i]["InEpEnabled"] ? `\
+                            \r\n.Intf${InterfaceNum}.InEndpoint.Address = 0x${toHexFormat(interfaceInfo[i]["InEpAddr"])},\
+                            \r\n.Intf${InterfaceNum}.InEndpoint.Size = 64,\
+                            \r\n.Intf${InterfaceNum}.InEndpoint.State = 0,\
+                            ` : ""}\
+                        ${interfaceInfo[i]["OutEpEnabled"] ? `\
+                            \r\n.Intf${InterfaceNum}.OutEndpoint.Address = 0x${toHexFormat(interfaceInfo[i]["OutEpAddr"])},\
+                            \r\n.Intf${InterfaceNum}.OutEndpoint.Size = 64,\
+                            \r\n.Intf${InterfaceNum}.OutEndpoint.State = 0,\
+                            ` : ""}\
+                        `;
+
+                        USBD_TypeDef_InitInFunc_String += `\
+                        \r\nusbd.Intf${InterfaceNum}.msosv1_desc.string = usbddesc.Intf${InterfaceNum}.WCID_StringDescriptor_MSOS;\
+                        \r\nusbd.Intf${InterfaceNum}.msosv1_desc.compat_id = usbddesc.Intf${InterfaceNum}.WINUSB_WCIDDescriptor;\
+                        \r\nusbd.Intf${InterfaceNum}.msosv1_desc.comp_id_property = usbddesc.Intf${InterfaceNum}.WINUSB_IFx_WCIDProperties;\
+                        `;
+
+                        InterfaceNum += 1;
+                    }
+                    break;
+
                 default:
                     break;
             }
@@ -2415,10 +2996,9 @@ function generateCode() {
     \r\n#endif\
     \r\n\
     \r\n#include "main.h"\
-    \r\n#include "${hFileName}"\
     \r\n#include "usbd_core.h"\
     ${haveHid ? `\r\n#include "usbd_hid.h"` : ""}\
-    ${haveCdc ? `\r\n#include "usbd_cdc_acm.h"` : ""}\
+    ${(haveCdc || haveWinUSB) ? `\r\n#include "usbd_cdc_acm.h"` : ""}\
     \r\n\
     \r\n#define USBD_STATE_IDLE 0u\
     \r\n#define USBD_STATE_BUSY 1u\
@@ -2427,11 +3007,9 @@ function generateCode() {
     ${typedefString}\
     \r\n\
     \r\nint USBD_InEp_Write(uint8_t Usb_BusId, uint8_t InEp, uint8_t *data, size_t Length, __IO uint8_t *state);\
-    \r\n\
-    \r\nvoid USBD_Event_Handler(uint8_t busid, uint8_t event);\
-    ${functionDefString}\
     \r\n\ 
     \r\nvoid USBD_Init(void);\
+    ${functionDefString}\
     \r\n\ 
     \r\nextern USBD_TypeDef usbd;\
     \r\n\
@@ -2446,13 +3024,16 @@ function generateCode() {
     USBD_Init_String = `\
     \r\nvoid USBD_Init(void)\
     \r\n{\
+    \r\n\
+    ${USBD_TypeDef_InitInFunc_String}\
+    \r\n\
     ${USBD_Init_String}\
     \r\nusbd_initialize(USBD_BUSID, USB_BASE, USBD_Event_Handler);\
     \r\n}\
     `;
 
     USBD_Event_Handler_String = `\
-    \r\n__weak void USBD_Event_Handler(uint8_t busid, uint8_t event)\
+    \r\nstatic void USBD_Event_Handler(uint8_t busid, uint8_t event)\
     \r\n{\
     \r\n    switch (event) {\
     \r\n        case USBD_EVENT_RESET:\
@@ -2491,13 +3072,15 @@ function generateCode() {
     \r\n\
     ${USBD_Intf_Init_String}\
     \r\n\
-    ${USBD_Ep_Init_String}\
-    \r\n\
     ${USBD_Ep_Callback_String}\
+    \r\n\
+    ${USBD_Ep_Init_String}\
     \r\n\
     ${USBD_TypeDef_Init_String}\
     \r\n\
     ${USBD_Init_String}\
+    \r\n
+    ${USBD_Intf_Write_Function_String}\
     `;
 
     document.getElementById("DevicecFileData").value = cFileData;
