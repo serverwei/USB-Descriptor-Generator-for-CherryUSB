@@ -1,3 +1,73 @@
+const USB_CONFIG_H = `
+/*
+ * Copyright (c) 2022, sakumisu
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+#ifndef CHERRYUSB_CONFIG_H
+#define CHERRYUSB_CONFIG_H
+
+/* ================ USB common Configuration ================ */
+
+// #define CONFIG_USB_PRINTF(...) printf(__VA_ARGS__)
+#define CONFIG_USB_PRINTF(...) ((void)(0))
+
+#define usb_malloc(size)       malloc(size)
+#define usb_free(ptr)          free(ptr)
+
+#ifndef CONFIG_USB_DBG_LEVEL
+#define CONFIG_USB_DBG_LEVEL 0
+#endif
+
+/* Enable print with color */
+// #define CONFIG_USB_PRINTF_COLOR_ENABLE
+
+/* data align size when use dma */
+#ifndef CONFIG_USB_ALIGN_SIZE
+#define CONFIG_USB_ALIGN_SIZE 4
+#endif
+
+/* attribute data into no cache ram */
+#define USB_NOCACHE_RAM_SECTION __attribute__((section(".noncacheable")))
+
+/* ================= USB Device Stack Configuration ================ */
+
+/* Ep0 in and out transfer buffer */
+#ifndef CONFIG_USBDEV_REQUEST_BUFFER_LEN
+#define CONFIG_USBDEV_REQUEST_BUFFER_LEN 512
+#endif
+
+/* Setup packet log for debug */
+// #define CONFIG_USBDEV_SETUP_LOG_PRINT
+
+/* Send ep0 in data from user buffer instead of copying into ep0 reqdata
+ * Please note that user buffer must be aligned with CONFIG_USB_ALIGN_SIZE
+ */
+// #define CONFIG_USBDEV_EP0_INDATA_NO_COPY
+
+/* Check if the input descriptor is correct */
+// #define CONFIG_USBDEV_DESC_CHECK
+
+/* Enable test mode */
+// #define CONFIG_USBDEV_TEST_MODE
+
+/* ================ USB Device Port Configuration ================*/
+
+#ifndef CONFIG_USBDEV_MAX_BUS
+#define CONFIG_USBDEV_MAX_BUS 1 // for now, bus num must be 1 except hpm ip
+
+#endif
+
+#ifndef CONFIG_USBDEV_EP_NUM
+#define CONFIG_USBDEV_EP_NUM 8
+#endif
+
+/* ---------------- FSDEV Configuration ---------------- */
+#define CONFIG_USBDEV_FSDEV_PMA_ACCESS 1 // maybe 1 or 2, many chips may have a difference
+
+#endif
+`;
+
 /**
  * 
  * @param {Element} element 
@@ -7,6 +77,18 @@ function hexValueInput(element = new Element, number) {
     const string = element.value;
     const hexOnly = String(string).toUpperCase().replace(/[^0-9A-F]/g, '');
     element.value = hexOnly;
+}
+
+function GenRandomGUID(element = new Element) {
+    let tableNode = element.parentNode.parentElement.parentNode;
+    let input = tableNode.getElementsByTagName("input");
+
+    const uuid = crypto.randomUUID().toUpperCase();
+    input[0].value = uuid.slice(0, 8);
+    input[1].value = uuid.slice(9, 13);
+    input[2].value = uuid.slice(14, 18);
+    input[3].value = uuid.slice(19, 23);
+    input[4].value = uuid.slice(24, 36);
 }
 
 /**
@@ -678,6 +760,118 @@ function addWinUsbInterface() {
     }
     intf.appendChild(table);
 
+    //GUID Setting
+    {
+        let input;
+        let button;
+        table = document.createElement("table");
+        tr = document.createElement("tr");
+        td = document.createElement("td");
+        button = document.createElement("button");
+        button.type = "button";
+        button.innerHTML = "Random GUID";
+        button.onclick = function () {
+            GenRandomGUID(this);
+        };
+        td.appendChild(button);
+        tr.appendChild(td);
+        table.appendChild(tr);
+
+        tr = document.createElement("tr");
+        td = document.createElement("td");
+        td.innerHTML = "GUID";
+        tr.appendChild(td);
+
+        //GUID 0
+        td = document.createElement("td");
+        input = document.createElement("input");
+        input.className = "WinUSB_GUID_0";
+        input.type = "text";
+        input.value = "00000000";
+        input.maxLength = 8;
+        input.style = "width: 65px";
+        input.oninput = function () {
+            hexValueInput(this, 8);
+        };
+        td.appendChild(input);
+        tr.appendChild(td);
+
+        td = document.createElement("td");
+        td.innerHTML = "-";
+        tr.appendChild(td);
+
+        //GUID 1
+        td = document.createElement("td");
+        input = document.createElement("input");
+        input.className = "WinUSB_GUID_1";
+        input.type = "text";
+        input.value = "0000";
+        input.maxLength = 4;
+        input.style = "width: 35px";
+        input.oninput = function () {
+            hexValueInput(this, 4);
+        };
+        td.appendChild(input);
+        tr.appendChild(td);
+
+        td = document.createElement("td");
+        td.innerHTML = "-";
+        tr.appendChild(td);
+
+        //GUID 2
+        td = document.createElement("td");
+        input = document.createElement("input");
+        input.className = "WinUSB_GUID_2";
+        input.type = "text";
+        input.value = "0000";
+        input.maxLength = 4;
+        input.style = "width: 35px";
+        input.oninput = function () {
+            hexValueInput(this, 4);
+        };
+        td.appendChild(input);
+        tr.appendChild(td);
+
+        td = document.createElement("td");
+        td.innerHTML = "-";
+        tr.appendChild(td);
+
+        //GUID 3
+        td = document.createElement("td");
+        input = document.createElement("input");
+        input.className = "WinUSB_GUID_3";
+        input.type = "text";
+        input.value = "0000";
+        input.maxLength = 4;
+        input.style = "width: 35px";
+        input.oninput = function () {
+            hexValueInput(this, 4);
+        };
+        td.appendChild(input);
+        tr.appendChild(td);
+
+        td = document.createElement("td");
+        td.innerHTML = "-";
+        tr.appendChild(td);
+
+        //GUID 4
+        td = document.createElement("td");
+        input = document.createElement("input");
+        input.className = "WinUSB_GUID_4";
+        input.type = "text";
+        input.value = "000000000000";
+        input.maxLength = 12;
+        input.style = "width: 95px";
+        input.oninput = function () {
+            hexValueInput(this, 12);
+        };
+        td.appendChild(input);
+        tr.appendChild(td);
+
+        table.appendChild(tr);
+    }
+    intf.appendChild(table);
+
     area.appendChild(intf);
 }
 
@@ -756,6 +950,11 @@ function stringToWcharArrayStringComplete(str) {
 }
 
 function generateCode() {
+    if (document.getElementsByClassName("Interface").length == 0) {
+        alert("No interface.");
+        return;
+    }
+
     let intf = document.getElementsByClassName("Interface");
     console.log("intf.length: " + intf.length);
     let tmp;
@@ -1611,6 +1810,26 @@ function generateCode() {
                         const OutEpAddr = interfaceNode.getElementsByClassName("OutEpAddr")[0].value | 0x00;
                         const RxLength = interfaceNode.getElementsByClassName("WinUSB_RX_Length")[0].value * 1;
                         const TxLength = interfaceNode.getElementsByClassName("WinUSB_TX_Length")[0].value * 1;
+                        let GUID0 = interfaceNode.getElementsByClassName("WinUSB_GUID_0")[0].value;
+                        let GUID1 = interfaceNode.getElementsByClassName("WinUSB_GUID_1")[0].value;
+                        let GUID2 = interfaceNode.getElementsByClassName("WinUSB_GUID_2")[0].value;
+                        let GUID3 = interfaceNode.getElementsByClassName("WinUSB_GUID_3")[0].value;
+                        let GUID4 = interfaceNode.getElementsByClassName("WinUSB_GUID_4")[0].value;
+                        while (GUID0.length < 8) {
+                            GUID0 = "0" + GUID0;
+                        }
+                        while (GUID1.length < 4) {
+                            GUID1 = "0" + GUID1;
+                        }
+                        while (GUID2.length < 4) {
+                            GUID2 = "0" + GUID2;
+                        }
+                        while (GUID3.length < 4) {
+                            GUID3 = "0" + GUID3;
+                        }
+                        while (GUID4.length < 12) {
+                            GUID4 = "0" + GUID4;
+                        }
                         let stringLen = 0;
                         let stringTmp = "";
 
@@ -1746,17 +1965,17 @@ function generateCode() {
                             \r\n'a', 0x00, 'c', 0x00, 'e', 0x00, 'G', 0x00,       /* wcName_20 */\
                             \r\n'U', 0x00, 'I', 0x00, 'D', 0x00, 0x00, 0x00,      /* wcName_20 */\
                             \r\n0x4e, 0x00, 0x00, 0x00,                           /* dwPropertyDataLength */\
-                            \r\n/* {1D4B2365-4749-48EA-B38A-7C6FDDDD7E26} */\
-                            \r\n'{', 0x00, '1', 0x00, 'D', 0x00, '4', 0x00,       /* wcData_39 */\
-                            \r\n'B', 0x00, '2', 0x00, '3', 0x00, '6', 0x00,       /* wcData_39 */\
-                            \r\n'5', 0x00, '-', 0x00, '4', 0x00, '7', 0x00,       /* wcData_39 */\
-                            \r\n'4', 0x00, '9', 0x00, '-', 0x00, '4', 0x00,       /* wcData_39 */\
-                            \r\n'8', 0x00, 'E', 0x00, 'A', 0x00, '-', 0x00,       /* wcData_39 */\
-                            \r\n'B', 0x00, '3', 0x00, '8', 0x00, 'A', 0x00,       /* wcData_39 */\
-                            \r\n'-', 0x00, '7', 0x00, 'C', 0x00, '6', 0x00,       /* wcData_39 */\
-                            \r\n'F', 0x00, 'D', 0x00, 'D', 0x00, 'D', 0x00,       /* wcData_39 */\
-                            \r\n'D', 0x00, '7', 0x00, 'E', 0x00, '2', 0x00,       /* wcData_39 */\
-                            \r\n'6', 0x00, '}', 0x00, 0x00, 0x00,                 /* wcData_39 */\
+                            \r\n/* {${GUID0}-${GUID1}-${GUID2}-${GUID3}-${GUID4}} */\
+                            \r\n'{', 0x00, '${GUID0[0]}', 0x00, '${GUID0[1]}', 0x00, '${GUID0[2]}', 0x00,       /* wcData_39 */\
+                            \r\n'${GUID0[3]}', 0x00, '${GUID0[4]}', 0x00, '${GUID0[5]}', 0x00, '${GUID0[6]}', 0x00,       /* wcData_39 */\
+                            \r\n'${GUID0[7]}', 0x00, '-', 0x00, '${GUID1[0]}', 0x00, '${GUID1[1]}', 0x00,       /* wcData_39 */\
+                            \r\n'${GUID1[2]}', 0x00, '${GUID1[3]}', 0x00, '-', 0x00, '${GUID2[0]}', 0x00,       /* wcData_39 */\
+                            \r\n'${GUID2[1]}', 0x00, '${GUID2[2]}', 0x00, '${GUID2[3]}', 0x00, '-', 0x00,       /* wcData_39 */\
+                            \r\n'${GUID3[0]}', 0x00, '${GUID3[1]}', 0x00, '${GUID3[2]}', 0x00, '${GUID3[3]}', 0x00,       /* wcData_39 */\
+                            \r\n'-', 0x00, '${GUID4[0]}', 0x00, '${GUID4[1]}', 0x00, '${GUID4[2]}', 0x00,       /* wcData_39 */\
+                            \r\n'${GUID4[3]}', 0x00, '${GUID4[4]}', 0x00, '${GUID4[5]}', 0x00, '${GUID4[6]}', 0x00,       /* wcData_39 */\
+                            \r\n'${GUID4[7]}', 0x00, '${GUID4[8]}', 0x00, '${GUID4[9]}', 0x00, '${GUID4[10]}', 0x00,       /* wcData_39 */\
+                            \r\n'${GUID4[11]}', 0x00, '}', 0x00, 0x00, 0x00,                 /* wcData_39 */\
                             \r\n};\
                             \r\n\
                             \r\nconst unsigned char *Intf${interfaceNum}_WINUSB_IFx_WCIDProperties[] = {\
@@ -2996,9 +3215,9 @@ function generateCode() {
     \r\n#endif\
     \r\n\
     \r\n#include "main.h"\
-    \r\n#include "usbd_core.h"\
-    ${haveHid ? `\r\n#include "usbd_hid.h"` : ""}\
-    ${(haveCdc || haveWinUSB) ? `\r\n#include "usbd_cdc_acm.h"` : ""}\
+    \r\n#include "CherryUSB/core/usbd_core.h"\
+    ${haveHid ? `\r\n#include "CherryUSB/class/hid/usbd_hid.h"` : ""}\
+    ${(haveCdc || haveWinUSB) ? `\r\n#include "../CherryUSB/class/hid/usbd_cdc_acm.h"` : ""}\
     \r\n\
     \r\n#define USBD_STATE_IDLE 0u\
     \r\n#define USBD_STATE_BUSY 1u\
@@ -3111,4 +3330,244 @@ function downloadFile(FileNameElementName = new String, DataElementName = new St
         document.body.removeChild(link);
         URL.revokeObjectURL(url);
     }, 100);
+}
+
+/**
+ * 创建USB包 - 优先使用本地文件，远程获取为备选方案
+ * @param {Object} additionalFiles - 额外添加的文件内容
+ * @returns {Promise} 返回Promise，成功时触发下载
+ */
+async function createUSBPackage(additionalFiles = {}) {
+    try {
+        // 创建ZIP实例
+        const zip = new JSZip();
+        const usbFolder = zip.folder('USB');
+
+        // 尝试使用本地CherryUSB文件夹
+        const useLocal = await tryUseLocalCherryUSB(usbFolder);
+
+        // 如果本地文件不可用，则从GitHub获取
+        if (!useLocal) {
+            console.log('本地CherryUSB文件夹不可用，从GitHub获取...');
+            await fetchFromGitHub(usbFolder);
+        } else {
+            console.log('使用本地CherryUSB文件夹');
+        }
+
+        // 添加额外的文件
+        for (const [filename, content] of Object.entries(additionalFiles)) {
+            usbFolder.file(filename, content);
+        }
+
+        // 生成ZIP文件并下载
+        const zipContent = await usbFolder.generateAsync({ type: 'blob' });
+        saveAs(zipContent, 'USB.zip');
+
+        console.log('USB包下载完成');
+    } catch (error) {
+        console.error('创建USB包失败:', error);
+        throw error;
+    }
+}
+
+/**
+ * 尝试使用本地CherryUSB文件夹
+ * @param {JSZip} usbFolder - JSZip文件夹实例
+ * @returns {Promise<boolean>} 返回是否成功使用本地文件
+ */
+async function tryUseLocalCherryUSB(usbFolder) {
+    try {
+        // 尝试访问本地CherryUSB文件夹
+        const response = await fetch('./CherryUSB/');
+        if (!response.ok) {
+            return false;
+        }
+
+        // 获取文件夹内容
+        const folderContent = await getLocalFolderContent('./CherryUSB/');
+        if (!folderContent || folderContent.length === 0) {
+            return false;
+        }
+
+        // 处理本地文件夹内容
+        await processLocalFolder(folderContent, usbFolder.folder('CherryUSB'), './CherryUSB/');
+        return true;
+    } catch (error) {
+        console.warn('无法访问本地CherryUSB文件夹:', error);
+        return false;
+    }
+}
+
+/**
+ * 获取本地文件夹内容
+ * @param {string} folderPath - 文件夹路径
+ * @returns {Promise<Array>} 返回文件列表
+ */
+async function getLocalFolderContent(folderPath) {
+    try {
+        // 这里简化处理，实际应用中可能需要根据服务器配置调整
+        // 对于静态文件服务器，我们可以尝试获取目录列表
+        const response = await fetch(folderPath);
+        const text = await response.text();
+
+        // 解析HTML获取文件列表（如果服务器返回目录列表）
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(text, 'text/html');
+        const links = doc.querySelectorAll('a');
+
+        const files = [];
+        for (const link of links) {
+            const href = link.getAttribute('href');
+            if (href && !href.startsWith('?') && href !== '../') {
+                files.push({
+                    name: href,
+                    path: folderPath + href,
+                    type: href.endsWith('/') ? 'dir' : 'file'
+                });
+            }
+        }
+
+        return files;
+    } catch (error) {
+        console.error('获取本地文件夹内容失败:', error);
+        return [];
+    }
+}
+
+/**
+ * 处理本地文件夹内容
+ * @param {Array} items - 文件/文件夹列表
+ * @param {JSZip} zipFolder - JSZip文件夹实例
+ * @param {string} currentPath - 当前路径
+ */
+async function processLocalFolder(items, zipFolder, currentPath) {
+    for (const item of items) {
+        if (item.type === 'file') {
+            // 获取文件内容
+            try {
+                const fileResponse = await fetch(item.path);
+                if (fileResponse.ok) {
+                    const fileContent = await fileResponse.blob();
+                    // 在ZIP中创建文件，保持相对路径
+                    const relativePath = item.path.replace(currentPath, '');
+                    zipFolder.file(relativePath, fileContent);
+                }
+            } catch (error) {
+                console.warn(`无法读取本地文件 ${item.path}:`, error);
+            }
+        } else if (item.type === 'dir') {
+            // 递归处理子文件夹
+            try {
+                const subItems = await getLocalFolderContent(item.path);
+                if (subItems && subItems.length > 0) {
+                    const subFolder = zipFolder.folder(item.name);
+                    await processLocalFolder(subItems, subFolder, item.path);
+                }
+            } catch (error) {
+                console.warn(`无法访问本地子文件夹 ${item.path}:`, error);
+            }
+        }
+    }
+}
+
+/**
+ * 从GitHub获取CherryUSB文件夹
+ * @param {JSZip} usbFolder - JSZip文件夹实例
+ */
+async function fetchFromGitHub(usbFolder) {
+    try {
+        // GitHub仓库信息
+        const repo = 'serverwei/USB-Descriptor-Generator-for-CherryUSB';
+        const branch = 'main';
+        const cherryUSBPath = 'CherryUSB';
+
+        // 获取CherryUSB文件夹内容
+        const apiUrl = `https://api.github.com/repos/${repo}/contents/${cherryUSBPath}?ref=${branch}`;
+        const response = await fetch(apiUrl);
+
+        if (!response.ok) {
+            throw new Error(`GitHub API请求失败: ${response.status} ${response.statusText}`);
+        }
+
+        const items = await response.json();
+
+        // 递归处理GitHub文件夹内容
+        await processGitHubItems(items, usbFolder.folder('CherryUSB'), cherryUSBPath, repo, branch);
+    } catch (error) {
+        console.error('从GitHub获取CherryUSB失败:', error);
+        throw error;
+    }
+}
+
+/**
+ * 递归处理GitHub文件夹内容
+ * @param {Array} items - GitHub API返回的文件/文件夹列表
+ * @param {JSZip} zipFolder - JSZip文件夹实例
+ * @param {string} currentPath - 当前路径
+ * @param {string} repo - 仓库路径
+ * @param {string} branch - 分支名称
+ */
+async function processGitHubItems(items, zipFolder, currentPath, repo, branch) {
+    for (const item of items) {
+        if (item.type === 'file') {
+            // 下载文件内容
+            try {
+                const fileResponse = await fetch(item.download_url);
+                if (fileResponse.ok) {
+                    const fileContent = await fileResponse.blob();
+                    // 在ZIP中创建文件，保持相对路径
+                    const relativePath = item.path.replace(`${currentPath}/`, '');
+                    zipFolder.file(relativePath, fileContent);
+                }
+            } catch (error) {
+                console.warn(`无法下载文件 ${item.path}:`, error);
+            }
+        } else if (item.type === 'dir') {
+            // 递归处理子文件夹
+            const subFolderUrl = `https://api.github.com/repos/${repo}/contents/${item.path}?ref=${branch}`;
+            try {
+                const subResponse = await fetch(subFolderUrl);
+                if (subResponse.ok) {
+                    const subItems = await subResponse.json();
+                    const subFolder = zipFolder.folder(item.name);
+                    await processGitHubItems(subItems, subFolder, item.path, repo, branch);
+                }
+            } catch (error) {
+                console.warn(`无法访问子文件夹 ${item.path}:`, error);
+            }
+        }
+    }
+}
+
+function downloadZip() {
+    if (document.getElementsByClassName("Interface").length == 0) {
+        alert("No interface.");
+        return;
+    }
+
+    generateCode();
+    
+    const usb_descriptor_c_data = document.getElementById("DescriptorcFileData").value;
+    const usb_descriptor_h_data = document.getElementById("DescriptorhFileData").value;
+    const usb_device_c_data = document.getElementById("DevicecFileData").value;
+    const usb_device_h_data = document.getElementById("DevicehFileData").value;
+
+    const usb_descriptor_c_name = document.getElementById("DescriptorcFileNameInput").value;
+    const usb_descriptor_h_name = document.getElementById("DescriptorhFileNameInput").value;
+    const usb_device_c_name = document.getElementById("DevicecFileNameInput").value;
+    const usb_device_h_name = document.getElementById("DevicehFileNameInput").value;
+
+    const additionalFiles = {
+        'usb_config.h': USB_CONFIG_H,
+
+        [usb_device_c_name]: usb_device_c_data,
+
+        [usb_device_h_name]: usb_device_h_data,
+
+        [usb_descriptor_c_name]: usb_descriptor_c_data,
+
+        [usb_descriptor_h_name]: usb_descriptor_h_data
+    };
+
+    createUSBPackage(additionalFiles);
 }
