@@ -1,12 +1,18 @@
-用于CherryUSB的USB描述符生成和USB初始化，仅支持HID的vendor define、mouse、keyboard、consumer和CDC-ACM。<br>
-vendor define不能和mouse在同一个接口中，会无法枚举，其他组合无影响。<br>
-在CherryUSB 1.4.2上验证通过，能够正常枚举。<br>
+用于CherryUSB的USB描述符生成和USB初始化。<br>
+生成代码仅支持fsdev外设，其他外设请自行解决。<br>
+仅支持HID的vendor define、mouse、keyboard、consumer和CDC-ACM。<br>
+使用1.4.3版本CherryUSB。<br>
 void usb_dc_low_level_init(void)和USB中断回调函数目前只有STM32F0、STM32L0、STM32G4、STM32F1、CH32F10x适配了生成，其他请自行解决。<br>
 
-能够枚举的组合（名称顺序对应接口顺序）<br>
-WinUSB+CDC<br>
-WinUSB+HID<br>
-CDC+CDC<br>
-CDC+HID（可交换顺序）<br>
+# USB接口组合对照表
+| 组合名称 | 接口1 | 接口2 | 备注 |
+|---------|-------|-------|------|
+| WinUSB+CDC | WinUSB | CDC | - |
+| WinUSB+HID | WinUSB | HID | - |
+| CDC+CDC | CDC | CDC | - |
+| CDC+HID | CDC | HID | 可交换顺序 |
+| HID+CDC | HID | CDC | 可交换顺序 |
 
-Page: https://serverwei.github.io/USB-Descriptor-Generator-for-CherryUSB/
+CherryUSB项目地址：https://github.com/cherry-embedded/CherryUSB/tree/4d6b12c704b7acfbc6b473d98c1829f0befe4bc4 <br>
+<br>
+Online Page: https://serverwei.github.io/USB-Descriptor-Generator-for-CherryUSB/<br>
