@@ -13,6 +13,8 @@ void usb_dc_low_level_init(void)和USB中断回调函数目前只有STM32F0、ST
 | CDC+HID | CDC | HID | 可交换顺序 |
 | HID+CDC | HID | CDC | 可交换顺序 |
 
+注意，在HID中，vendor define和mouse不能存在同一个interface，其他无影响。
+
 CherryUSB项目地址：https://github.com/cherry-embedded/CherryUSB/tree/4d6b12c704b7acfbc6b473d98c1829f0befe4bc4 <br>
 <br>
 Online Page: https://serverwei.github.io/USB-Descriptor-Generator-for-CherryUSB/<br>
