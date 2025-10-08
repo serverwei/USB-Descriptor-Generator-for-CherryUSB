@@ -8,7 +8,9 @@
     </title>
 </head>
 <link ref="stylesheet" href="css/usbddg.css">
-<script type="text/javascript" src="/USB-Descriptor-Generator-for-CherryUSB/javascript/usbddg.js"></script>
+<script type="text/javascript" src="javascript/usbddg.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 
 <body style="display: flex; flex-direction: column;">
     <div style="display: flex; flex-direction: column;">
@@ -174,8 +176,14 @@
     </div>
 
     <div style="display: flex; flex-direction: column;">
-        <div>
-            <button type="button" onclick="generateCode()">Generate code</button>
+        <div style="display: flex; flex-direction: row;">
+            <button type="button" onclick="generateCode()">
+                Generate code
+            </button>
+            <div style="width: 20px;"></div>
+            <button type="button" onclick="downloadZip()">
+                Download all code(zip)
+            </button>
         </div>
         <div style="height: 20px;"></div>
         <div style="display: flex; flex-direction: row;">
