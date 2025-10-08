@@ -1,6 +1,6 @@
 用于CherryUSB的USB描述符生成和USB初始化。<br>
 生成代码仅支持fsdev外设，其他外设请自行解决。<br>
-仅支持HID的vendor define、mouse、keyboard、consumer和CDC-ACM。<br>
+仅支持HID的vendor define、mouse、keyboard、consumer，CDC-ACM，WinUSB。<br>
 使用1.4.3版本CherryUSB。<br>
 void usb_dc_low_level_init(void)和USB中断回调函数目前只有STM32F0、STM32L0、STM32G4、STM32F1、CH32F10x适配了生成，其他请自行解决。<br>
 
