@@ -3,7 +3,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-#include "../CherryUSB/core/usbd_core.h"
+#include "../../core/usbd_core.h"
 #include "usbd_hid.h"
 
 static int hid_class_interface_request_handler(uint8_t busid, struct usb_setup_packet *setup, uint8_t **data, uint32_t *len)

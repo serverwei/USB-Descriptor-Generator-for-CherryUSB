@@ -16,14 +16,14 @@ extern "C" {
 #include <stdlib.h>
 
 #include "usb_config.h"
-#include "../CherryUSB/common/usb_util.h"
-#include "../CherryUSB/common/usb_errno.h"
-#include "../CherryUSB/common/usb_def.h"
-#include "../CherryUSB/common/usb_list.h"
-#include "../CherryUSB/common/usb_log.h"
-#include "../CherryUSB/common/usb_dc.h"
-#include "../CherryUSB/common/usb_memcpy.h"
-#include "../CherryUSB/common/usb_version.h"
+#include "../common/usb_util.h"
+#include "../common/usb_errno.h"
+#include "../common/usb_def.h"
+#include "../common/usb_list.h"
+#include "../common/usb_log.h"
+#include "../common/usb_dc.h"
+#include "../common/usb_memcpy.h"
+#include "../common/usb_version.h"
 
 enum usbd_event_type {
     /* USB DCD IRQ */

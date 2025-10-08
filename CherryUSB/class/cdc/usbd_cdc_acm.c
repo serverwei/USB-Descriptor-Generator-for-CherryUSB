@@ -3,7 +3,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-#include "../CherryUSB/core/usbd_core.h"
+#include "../../core/usbd_core.h"
 #include "usbd_cdc_acm.h"
 
 const char *stop_name[] = { "1", "1.5", "2" };

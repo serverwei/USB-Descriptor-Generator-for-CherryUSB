@@ -3,7 +3,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-#include "../CherryUSB/core/usbd_core.h"
+#include "../../core/usbd_core.h"
 #include "usbd_cdc_ecm.h"
 
 #define CDC_ECM_OUT_EP_IDX 0

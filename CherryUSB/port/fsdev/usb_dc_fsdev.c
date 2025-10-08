@@ -3,7 +3,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-#include "../CherryUSB/core/usbd_core.h"
+#include "../../core/usbd_core.h"
 
 #ifndef CONFIG_USBDEV_FSDEV_PMA_ACCESS
 #error "please define CONFIG_USBDEV_FSDEV_PMA_ACCESS in usb_config.h"
