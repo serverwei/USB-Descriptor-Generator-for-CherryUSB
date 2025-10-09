@@ -1,5 +1,4 @@
-const USB_CONFIG_H = `
-/*
+const USB_CONFIG_H = `/*
  * Copyright (c) 2022, sakumisu
  *
  * SPDX-License-Identifier: Apache-2.0
@@ -65,8 +64,128 @@ const USB_CONFIG_H = `
 /* ---------------- FSDEV Configuration ---------------- */
 #define CONFIG_USBDEV_FSDEV_PMA_ACCESS 1 // maybe 1 or 2, many chips may have a difference
 
+#endif`;
+
+const USB_DC_INIT_DEINIT_IRQ = `#if defined(STM32F0) || defined(STM32L0) || defined(STM32G4) || defined(STM32F1)
+void usb_dc_low_level_init(void)
+{
+#if defined(STM32G4) || defined(STM32F0)
+    RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
+
+    PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USB;
+    PeriphClkInit.UsbClockSelection    = RCC_USBCLKSOURCE_HSI48;
+    if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK) {
+        Error_Handler();
+    }
+#elif defined(STM32F1)
+    RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
+    PeriphClkInit.PeriphClockSelection     = RCC_PERIPHCLK_USB;
+    PeriphClkInit.UsbClockSelection        = RCC_USBCLKSOURCE_PLL_DIV1_5;
+    if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK) {
+        Error_Handler();
+    }
 #endif
-`;
+    /* USB clock enable */
+    __HAL_RCC_USB_CLK_ENABLE();
+
+/* USB interrupt Init */
+#if defined(STM32F1)
+    HAL_NVIC_SetPriority(USB_LP_CAN1_RX0_IRQn, 0, 0);
+    HAL_NVIC_EnableIRQ(USB_LP_CAN1_RX0_IRQn);
+#else
+    HAL_NVIC_SetPriority(USB_IRQn, 0, 0);
+    HAL_NVIC_EnableIRQ(USB_IRQn);
+#endif
+}
+
+#elif defined(__CH32F10x_H)
+void usb_dc_low_level_init(void)
+{
+    if (SystemCoreClock == 72000000) {
+        RCC_USBCLKConfig(RCC_USBCLKSource_PLLCLK_1Div5);
+    } else if (SystemCoreClock == 48000000) {
+        RCC_USBCLKConfig(RCC_USBCLKSource_PLLCLK_Div1);
+    }
+    RCC_APB1PeriphClockCmd(RCC_APB1Periph_USB, ENABLE);
+
+    if (PWR_VDD_SupplyVoltage() == PWR_VDD_5V) {
+        EXTEN->EXTEN_CTR |= EXTEN_USB_5V_SEL;
+    } else {
+        EXTEN->EXTEN_CTR &= ~EXTEN_USB_5V_SEL;
+    }
+
+    (EXTEN->EXTEN_CTR) |= EXTEN_USBD_PU_EN;
+
+    NVIC_InitTypeDef NVIC_InitStructure;
+    NVIC_InitStructure.NVIC_IRQChannel                   = USB_LP_CAN1_RX0_IRQn;
+    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
+    NVIC_InitStructure.NVIC_IRQChannelSubPriority        = 0;
+    NVIC_InitStructure.NVIC_IRQChannelCmd                = ENABLE;
+    NVIC_Init(&NVIC_InitStructure);
+}
+
+#else
+// You need to fill the usb_dc_low_level_init function correctly
+void usb_dc_low_level_init(void)
+{
+}
+#endif
+
+void usb_dc_low_level_deinit(void)
+{
+#if defined(STM32F0) || defined(STM32L0) || defined(STM32G4) || defined(STM32F1)
+    __HAL_RCC_USB_CLK_DISABLE();
+
+#if defined(STM32F1)
+    HAL_NVIC_DisableIRQ(USB_LP_CAN1_RX0_IRQn);
+#else
+    HAL_NVIC_DisableIRQ(USB_IRQn);
+#endif
+
+#elif defined(__CH32F10x_H)
+    RCC_APB1PeriphClockCmd(RCC_APB1Periph_USB, DISABLE);
+
+    NVIC_InitTypeDef NVIC_InitStructure;
+    NVIC_InitStructure.NVIC_IRQChannel                   = USB_LP_CAN1_RX0_IRQn;
+    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
+    NVIC_InitStructure.NVIC_IRQChannelSubPriority        = 0;
+    NVIC_InitStructure.NVIC_IRQChannelCmd                = DISABLE;
+    NVIC_Init(&NVIC_InitStructure);
+
+#else
+
+#endif
+}
+
+#if defined(STM32F0) || defined(STM32L0)
+void USB_IRQHandler(void)
+{
+    extern void USBD_IRQHandler(uint8_t busid);
+    USBD_IRQHandler(USBD_BUSID);
+}
+
+#elif defined(STM32G4) || defined(STM32F1)
+void USB_LP_IRQHandler(void)
+{
+    extern void USBD_IRQHandler(uint8_t busid);
+    USBD_IRQHandler(USBD_BUSID);
+}
+
+#elif defined(__CH32F10x_H)
+void USB_LP_CAN1_RX0_IRQHandler(void)
+{
+    extern void USBD_IRQHandler(uint8_t busid);
+    USBD_IRQHandler(USBD_BUSID);
+}
+
+#else
+// You need to replace USB_IRQHandler with the correct USB interrupt callback function
+void USB_IRQHandler(void)
+{
+    extern void USBD_IRQHandler(uint8_t busid);
+    USBD_IRQHandler(USBD_BUSID);
+}
+#endif`;
 
 /**
  * 
@@ -2374,88 +2493,7 @@ function generateCode() {
     cFileData = `#include "${devicehFileName}"\
     \r\n#include "${hFileName}"\
     \r\n\
-    \r\n#if defined(STM32F0) || defined(STM32L0) || defined(STM32G4) || defined(STM32F1)\
-    \r\nvoid usb_dc_low_level_init(void)\
-    \r\n{\
-    \r\n#if defined(STM32G4) || defined(STM32F1)\
-    \r\n    RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};\
-    \r\n\        
-    \r\n    PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USB;\
-    \r\n    PeriphClkInit.UsbClockSelection    = RCC_USBCLKSOURCE_HSI48;\
-    \r\n    if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK) {\
-    \r\n        Error_Handler();\
-    \r\n    }\
-    \r\n#endif\
-    \r\n    /* USB clock enable */\
-    \r\n    __HAL_RCC_USB_CLK_ENABLE();\
-    \r\n\        
-    \r\n    /* USB interrupt Init */\
-    \r\n    HAL_NVIC_SetPriority(USB_IRQn, 0, 0);\
-    \r\n    HAL_NVIC_EnableIRQ(USB_IRQn);\
-    \r\n}\
-    \r\n\
-    \r\n#elif defined(__CH32F10x_H)\
-    \r\nvoid usb_dc_low_level_init(void)\
-    \r\n{\
-    \r\n    if (SystemCoreClock == 72000000) {\
-    \r\n        RCC_USBCLKConfig(RCC_USBCLKSource_PLLCLK_1Div5);\
-    \r\n    } else if (SystemCoreClock == 48000000) {\
-    \r\n        RCC_USBCLKConfig(RCC_USBCLKSource_PLLCLK_Div1);\
-    \r\n    }\
-    \r\n    RCC_APB1PeriphClockCmd(RCC_APB1Periph_USB, ENABLE);\
-    \r\n\
-    \r\n    if (PWR_VDD_SupplyVoltage() == PWR_VDD_5V) {\
-    \r\n        EXTEN->EXTEN_CTR |= EXTEN_USB_5V_SEL;\
-    \r\n    } else {\
-    \r\n        EXTEN->EXTEN_CTR &= ~EXTEN_USB_5V_SEL;\
-    \r\n    }\
-    \r\n\
-    \r\n    (EXTEN->EXTEN_CTR) |= EXTEN_USBD_PU_EN;\
-    \r\n\
-    \r\n    NVIC_InitTypeDef NVIC_InitStructure;\
-    \r\n    NVIC_InitStructure.NVIC_IRQChannel                   = USB_LP_CAN1_RX0_IRQn;\
-    \r\n    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;\
-    \r\n    NVIC_InitStructure.NVIC_IRQChannelSubPriority        = 0;\
-    \r\n    NVIC_InitStructure.NVIC_IRQChannelCmd                = ENABLE;\
-    \r\n    NVIC_Init(&NVIC_InitStructure);\
-    \r\n}\
-    \r\n      
-    \r\n#else\
-    \r\n// You need to fill the usb_dc_low_level_init function correctly\
-    \r\nvoid usb_dc_low_level_init(void)\
-    \r\n{\
-    \r\n}\
-    \r\n#endif\
-    \r\n\
-    \r\n#if defined(STM32F0) || defined(STM32L0)\
-    \r\nvoid USB_IRQHandler(void)\
-    \r\n{\
-    \r\n    extern void USBD_IRQHandler(uint8_t busid);\
-    \r\n    USBD_IRQHandler(USBD_BUSID);\
-    \r\n}
-    \r\n\
-    \r\n#elif defined(STM32G4) || defined(STM32F1)\
-    \r\nvoid USB_LP_IRQHandler(void)\
-    \r\n{\
-    \r\n    extern void USBD_IRQHandler(uint8_t busid);\
-    \r\n    USBD_IRQHandler(USBD_BUSID);\
-    \r\n}\
-    \r\n\
-    \r\n#elif defined(__CH32F10x_H)\
-    \r\nvoid USB_LP_CAN1_RX0_IRQHandler(void)\
-    \r\n{\
-    \r\n    extern void USBD_IRQHandler(uint8_t busid);\
-    \r\n    USBD_IRQHandler(USBD_BUSID);\
-    \r\n}\
-    \r\n\
-    \r\n#else\
-    \r\n// You need to replace USB_IRQHandler with the correct USB interrupt callback function\
-    \r\nvoid USB_IRQHandler(void)\
-    \r\n{\
-    \r\n    extern void USBD_IRQHandler(uint8_t busid);\
-    \r\n    USBD_IRQHandler(USBD_BUSID);\
-    \r\n}\
-    \r\n#endif\
+    ${USB_DC_INIT_DEINIT_IRQ}\
     \r\n\
     \r\nint USBD_InEp_Write(uint8_t Usb_BusId, uint8_t InEp, uint8_t *data, size_t Length, __IO uint8_t *state)\
     \r\n{\
@@ -3546,7 +3584,7 @@ function downloadZip() {
     }
 
     generateCode();
-    
+
     const usb_descriptor_c_data = document.getElementById("DescriptorcFileData").value;
     const usb_descriptor_h_data = document.getElementById("DescriptorhFileData").value;
     const usb_device_c_data = document.getElementById("DevicecFileData").value;
