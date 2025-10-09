@@ -2550,7 +2550,7 @@ function generateCode() {
                                 }
 
                                 USBD_Intf_Write_Function_String += `\
-                                \r\nint USBD_Intf${InterfaceNum}_VendorApp_Input(void)\
+                                \r\nint USBD_Intf${InterfaceNum}_VendorApp_Write_Input(void)\
                                 \r\n{\
                                 \r\n    return USBD_InEp_Write(\
                                 \r\n        USBD_BUSID,\
@@ -2560,7 +2560,7 @@ function generateCode() {
                                 \r\n        &usbd.Intf${InterfaceNum}.Input.State);\
                                 \r\n}\
                                 \r\n`;
-                                functionDefString += `\r\nint USBD_Intf${InterfaceNum}_VendorApp_Input(void);`;
+                                functionDefString += `\r\nint USBD_Intf${InterfaceNum}_VendorApp_Write_Input(void);`;
                             }
 
                             //Mouse
@@ -2606,7 +2606,7 @@ function generateCode() {
                                 \r\n`;
 
                                 USBD_Intf_Write_Function_String += `\
-                                \r\nint USBD_Intf${InterfaceNum}_Mouse_Input(void)\
+                                \r\nint USBD_Intf${InterfaceNum}_Mouse_Write_Input(void)\
                                 \r\n{\
                                 \r\n    return USBD_InEp_Write(\
                                 \r\n        USBD_BUSID,\
@@ -2616,7 +2616,7 @@ function generateCode() {
                                 \r\n        &usbd.Intf${InterfaceNum}.Input.State);\
                                 \r\n}\
                                 \r\n`;
-                                functionDefString += `\r\nint USBD_Intf${InterfaceNum}_Mouse_Input(void);`;
+                                functionDefString += `\r\nint USBD_Intf${InterfaceNum}_Mouse_Write_Input(void);`;
                             }
 
                             //Keyboard
@@ -2646,7 +2646,7 @@ function generateCode() {
                                 \r\n`;
 
                                 USBD_Intf_Write_Function_String += `\
-                                \r\nint USBD_Intf${InterfaceNum}_Keyboard_Input(void)\
+                                \r\nint USBD_Intf${InterfaceNum}_Keyboard_Write_Input(void)\
                                 \r\n{\
                                 \r\n    return USBD_InEp_Write(\
                                 \r\n        USBD_BUSID,\
@@ -2656,7 +2656,7 @@ function generateCode() {
                                 \r\n        &usbd.Intf${InterfaceNum}.Input.State);\
                                 \r\n}\
                                 \r\n`;
-                                functionDefString += `\r\nint USBD_Intf${InterfaceNum}_Keyboard_Input(void);`;
+                                functionDefString += `\r\nint USBD_Intf${InterfaceNum}_Keyboard_Write_Input(void);`;
                             }
 
                             //Consumer
@@ -2673,7 +2673,7 @@ function generateCode() {
                                 \r\n`;
 
                                 USBD_Intf_Write_Function_String += `\
-                                \r\nint USBD_Intf${InterfaceNum}_Consumer_Input(void)\
+                                \r\nint USBD_Intf${InterfaceNum}_Consumer_Write_Input(void)\
                                 \r\n{\
                                 \r\n    return USBD_InEp_Write(\
                                 \r\n        USBD_BUSID,\
@@ -2683,7 +2683,7 @@ function generateCode() {
                                 \r\n        &usbd.Intf${InterfaceNum}.Input.State);\
                                 \r\n}\
                                 \r\n`;
-                                functionDefString += `\r\nint USBD_Intf${InterfaceNum}_Consumer_Input(void);`;
+                                functionDefString += `\r\nint USBD_Intf${InterfaceNum}_Consumer_Write_Input(void);`;
                             }
 
                             haveReportId = VendorDefineReportId | MouseReportId | KeyboardReportId | ConsumerReportId;
@@ -2892,7 +2892,7 @@ function generateCode() {
                             `;
 
                         USBD_Intf_Write_Function_String += `\
-                        \r\nint USBD_Intf${InterfaceNum}_CDC_ACM_Int_Input(void)\
+                        \r\nint USBD_Intf${InterfaceNum}_CDC_ACM_Int_Write_Input(void)\
                         \r\n{\
                         \r\n    return USBD_InEp_Write(\
                         \r\n        USBD_BUSID,\
@@ -2902,7 +2902,7 @@ function generateCode() {
                         \r\n        &usbd.Intf${InterfaceNum}.IntEndpoint.State);\
                         \r\n}\
                         \r\n`;
-                        functionDefString += `\r\nint USBD_Intf${InterfaceNum}_CDC_ACM_Int_Input(void);`;
+                        functionDefString += `\r\nint USBD_Intf${InterfaceNum}_CDC_ACM_Int_Write_Input(void);`;
 
                         inputTypeDefString = `\
                         \r\nstruct {\
@@ -2945,7 +2945,7 @@ function generateCode() {
                             `;
 
                         USBD_Intf_Write_Function_String += `\
-                        \r\nint USBD_Intf${InterfaceNum + 1}_CDC_ACM_Data_Input(size_t Length)\
+                        \r\nint USBD_Intf${InterfaceNum + 1}_CDC_ACM_Data_Write_Input(size_t Length)\
                         \r\n{\
                         \r\n    Length = Length > sizeof(usbd.Intf${InterfaceNum + 1}.InEndpoint.Buffer)\
                         \r\n        ? sizeof(usbd.Intf${InterfaceNum + 1}.InEndpoint.Buffer) \
@@ -2959,7 +2959,7 @@ function generateCode() {
                         \r\n        &usbd.Intf${InterfaceNum + 1}.InEndpoint.State);\
                         \r\n}\
                         \r\n`;
-                        functionDefString += `\r\nint USBD_Intf${InterfaceNum + 1}_CDC_ACM_Data_Input(size_t Length);`;
+                        functionDefString += `\r\nint USBD_Intf${InterfaceNum + 1}_CDC_ACM_Data_Write_Input(size_t Length);`;
 
                         outputTypeDefString = `\
                         \r\nstruct {\
@@ -3099,7 +3099,7 @@ function generateCode() {
                             `;
 
                             USBD_Intf_Write_Function_String += `\
-                            \r\nint USBD_Intf${InterfaceNum}_WinUSB_Input(size_t Length)\
+                            \r\nint USBD_Intf${InterfaceNum}_WinUSB_Write_Input(size_t Length)\
                             \r\n{\
                             \r\n    Length = Length > sizeof(usbd.Intf${InterfaceNum}.InEndpoint.Buffer)\
                             \r\n        ? sizeof(usbd.Intf${InterfaceNum}.InEndpoint.Buffer) \
@@ -3113,7 +3113,7 @@ function generateCode() {
                             \r\n        &usbd.Intf${InterfaceNum}.InEndpoint.State);\
                             \r\n}\
                             \r\n`;
-                            functionDefString += `\r\nint USBD_Intf${InterfaceNum}_WinUSB_Input(size_t Length);`;
+                            functionDefString += `\r\nint USBD_Intf${InterfaceNum}_WinUSB_Write_Input(size_t Length);`;
                         }
 
                         if (interfaceInfo[i]["OutEpEnabled"]) {
