@@ -1,4 +1,5 @@
-const USB_CONFIG_H = `/*
+const USB_CONFIG_H = `\
+/*
  * Copyright (c) 2022, sakumisu
  *
  * SPDX-License-Identifier: Apache-2.0
@@ -64,9 +65,15 @@ const USB_CONFIG_H = `/*
 /* ---------------- FSDEV Configuration ---------------- */
 #define CONFIG_USBDEV_FSDEV_PMA_ACCESS 1 // maybe 1 or 2, many chips may have a difference
 
-#endif`;
+#endif\
+`;
 
-const USB_DC_INIT_DEINIT_IRQ = `#if defined(STM32F0) || defined(STM32L0) || defined(STM32G4) || defined(STM32F1)
+const USB_DC_INIT_DEINIT_IRQ = `\
+#if defined(__CH32F10x_H) && !defined(USB_BASE)
+#define USB_BASE RegBase
+#endif
+
+#if defined(STM32F0) || defined(STM32L0) || defined(STM32G4) || defined(STM32F1)
 void usb_dc_low_level_init(void)
 {
 #if defined(STM32G4) || defined(STM32F0)
@@ -80,7 +87,11 @@ void usb_dc_low_level_init(void)
 #elif defined(STM32F1)
     RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
     PeriphClkInit.PeriphClockSelection     = RCC_PERIPHCLK_USB;
-    PeriphClkInit.UsbClockSelection        = RCC_USBCLKSOURCE_PLL_DIV1_5;
+    if (HAL_RCC_GetSysClockFreq() == 72000000) {
+        PeriphClkInit.UsbClockSelection = RCC_USBCLKSOURCE_PLL_DIV1_5;
+    } else {
+        PeriphClkInit.UsbClockSelection = RCC_USBCLKSOURCE_PLL;
+    }
     if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK) {
         Error_Handler();
     }
@@ -185,7 +196,8 @@ void USB_IRQHandler(void)
     extern void USBD_IRQHandler(uint8_t busid);
     USBD_IRQHandler(USBD_BUSID);
 }
-#endif`;
+#endif\
+`;
 
 /**
  * 
