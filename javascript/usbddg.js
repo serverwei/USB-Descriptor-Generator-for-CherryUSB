@@ -1,5 +1,5 @@
 const USB_CONFIG_H = `\
-/*
+\r\n/*
  * Copyright (c) 2022, sakumisu
  *
  * SPDX-License-Identifier: Apache-2.0
@@ -69,7 +69,7 @@ const USB_CONFIG_H = `\
 `;
 
 const USB_DC_INIT_DEINIT_IRQ = `\
-#if defined(__CH32F10x_H) && !defined(USB_BASE)
+\r\n#if defined(__CH32F10x_H) && !defined(USB_BASE)
 #define USB_BASE RegBase
 #endif
 
@@ -3264,10 +3264,15 @@ function generateCode() {
     \r\nextern "C" {\
     \r\n#endif\
     \r\n\
+    \r\n#if defined(__CH32F10x_H)\
+    \r\n#include "usb_regs.h"\
+    \r\n#else\
     \r\n#include "main.h"\
+    \r\n#endif\
+    \r\n\
     \r\n#include "CherryUSB/core/usbd_core.h"\
     ${haveHid ? `\r\n#include "CherryUSB/class/hid/usbd_hid.h"` : ""}\
-    ${(haveCdc || haveWinUSB) ? `\r\n#include "../CherryUSB/class/hid/usbd_cdc_acm.h"` : ""}\
+    ${(haveCdc || haveWinUSB) ? `\r\n#include "CherryUSB/class/hid/usbd_cdc_acm.h"` : ""}\
     \r\n\
     \r\n#define USBD_STATE_IDLE 0u\
     \r\n#define USBD_STATE_BUSY 1u\
