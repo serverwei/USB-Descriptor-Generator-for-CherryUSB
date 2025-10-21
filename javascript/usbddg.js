@@ -2488,6 +2488,7 @@ function generateCode() {
     let haveHid = false;
     let haveCdc = false;
     let haveWinUSB = false;
+    let haveKeyboard = false;
     let functionDefString = "";
     let USBD_Event_Handler_String = "";
     let USBD_Ep_Callback_String = "";
@@ -2497,6 +2498,7 @@ function generateCode() {
     let USBD_TypeDef_InitInFunc_String = "";
     let USBD_Intf_Write_Function_String = "";
     let USBD_Init_String = `\r\nusbd_desc_register(USBD_BUSID, usbddesc.Descriptor.buffer);`;
+    let USBD_KeyBoard_ReportId_List = [];
     hFileData = "";
     cFileData = "";
     handleString = "";
@@ -2540,7 +2542,6 @@ function generateCode() {
         for (let i = 0; i < interfaceInfo.length; i++) {
             let inputString = "";
             let outputString = "";
-
 
             switch (interfaceInfo[i]["Type"]) {
                 case "HID":
@@ -2672,26 +2673,31 @@ function generateCode() {
                             //Keyboard
                             if (interfaceInfo[i]["Keyboard"]["Enabled"]) {
                                 KeyboardReportId = interfaceInfo[i]["Keyboard"]["Id"]["Value"];
+                                haveKeyboard = true;
+
+                                if (KeyboardReportId) {
+                                    USBD_KeyBoard_ReportId_List.push(KeyboardReportId);
+                                }
 
                                 inputString += `\
                                 \r\nstruct\
                                 \r\n{\
                                 ${KeyboardReportId ? `\
-                                    \r\nunsigned char ReportId;\
+                                    \r\nuint8_t ReportId;\
                                     ` : ""}\
                                 \r\nstruct\
                                 \r\n{\
-                                \r\nunsigned char LeftCtrl : 1;\
-                                \r\nunsigned char LeftShift : 1;\
-                                \r\nunsigned char LeftAlt : 1;\
-                                \r\nunsigned char LeftGUI : 1;\
-                                \r\nunsigned char RightCtrl : 1;\
-                                \r\nunsigned char RightShift : 1;\
-                                \r\nunsigned char RightAlt : 1;\
-                                \r\nunsigned char RightGUI : 1;\
+                                \r\nuint8_t LeftCtrl : 1;\
+                                \r\nuint8_t LeftShift : 1;\
+                                \r\nuint8_t LeftAlt : 1;\
+                                \r\nuint8_t LeftGUI : 1;\
+                                \r\nuint8_t RightCtrl : 1;\
+                                \r\nuint8_t RightShift : 1;\
+                                \r\nuint8_t RightAlt : 1;\
+                                \r\nuint8_t RightGUI : 1;\
                                 \r\n} FunctionKey;\
-                                \r\nunsigned char : 8;\
-                                \r\nunsigned char NormalKey[${interfaceInfo[i]["Keyboard"]["NormalKey"]["Number"]}];\
+                                \r\nuint8_t : 8;\
+                                \r\nuint8_t NormalKey[${interfaceInfo[i]["Keyboard"]["NormalKey"]["Number"]}];\
                                 \r\n} Keyboard; \
                                 \r\n`;
 
@@ -2716,9 +2722,9 @@ function generateCode() {
                                 inputString += `\
                                 \r\nstruct {\
                                 ${ConsumerReportId ? `\
-                                    \r\nunsigned char ReportId;\
+                                    \r\nuint8_t ReportId;\
                                     ` : ""}\
-                                \r\nunsigned short Key[${interfaceInfo[i]["Consumer"]["Key"]["Number"]}];\
+                                \r\nuint16_t Key[${interfaceInfo[i]["Consumer"]["Key"]["Number"]}];\
                                 \r\n} Consumer;\
                                 \r\n`;
 
@@ -3254,6 +3260,7 @@ function generateCode() {
     typedefString = `\
     \r\ntypedef struct {\
     ${typedefString}\
+    ${haveKeyboard ? "\r\nuint8_t KeyBoardLedState;" : ""}\
     \r\n} USBD_TypeDef;\
     `;
 
@@ -3264,15 +3271,14 @@ function generateCode() {
     \r\nextern "C" {\
     \r\n#endif\
     \r\n\
-    \r\n#if defined(__CH32F10x_H)\
-    \r\n#include "usb_regs.h"\
-    \r\n#else\
     \r\n#include "main.h"\
-    \r\n#endif\
-    \r\n\
     \r\n#include "CherryUSB/core/usbd_core.h"\
     ${haveHid ? `\r\n#include "CherryUSB/class/hid/usbd_hid.h"` : ""}\
     ${(haveCdc || haveWinUSB) ? `\r\n#include "CherryUSB/class/hid/usbd_cdc_acm.h"` : ""}\
+    \r\n\
+    \r\n#if defined(__CH32F10x_H)\
+    \r\n#include "usb_regs.h"\
+    \r\n#endif\
     \r\n\
     \r\n#define USBD_STATE_IDLE 0u\
     \r\n#define USBD_STATE_BUSY 1u\
@@ -3334,6 +3340,36 @@ function generateCode() {
     \r\n}\
     `;
 
+    let USBD_Hid_Set_Report_String = `\
+    \r\nvoid usbd_hid_set_report(uint8_t busid, uint8_t intf, uint8_t report_id, uint8_t report_type, uint8_t *report, uint32_t report_len)\
+    \r\n{\
+        ${haveKeyboard ? `\
+        ${(() => {
+                let str = "";
+                if (USBD_KeyBoard_ReportId_List.length) {
+                    for (let i = 0; i < USBD_KeyBoard_ReportId_List.length; i++) {
+                        str += `report_id == ${USBD_KeyBoard_ReportId_List[i]}`;
+                        if (i < USBD_KeyBoard_ReportId_List.length - 1) {
+                            str += "||";
+                        }
+                    }
+                    str = `\
+                    \r\nif (${str}) {\
+                    \r\n    usbd.KeyBoardLedState = report[1];\
+                    \r\n}`
+                } else {
+                    str = "usbd.KeyBoardLedState = report[1];";
+                }
+                return `\
+                \r\nif (report_type == HID_REPORT_OUTPUT) {\
+                ${str}\
+                \r\n}\
+                `;
+            })()}\
+        ` : ""}\
+    \r\n}\
+    `;
+
     USBD_TypeDef_Init_String = `\
     \r\nUSBD_TypeDef usbd = {\
     ${USBD_TypeDef_Init_String}\
@@ -3343,6 +3379,8 @@ function generateCode() {
     cFileData = `${cFileData}\
     \r\n\
     ${USBD_Event_Handler_String}\
+    \r\n\
+    ${USBD_Hid_Set_Report_String}\
     \r\n\
     ${USBD_Intf_Init_String}\
     \r\n\
@@ -3396,7 +3434,7 @@ async function createUSBPackage(additionalFiles = {}) {
     try {
         // 创建ZIP实例
         const zip = new JSZip();
-        const usbFolder = zip.folder('USB');
+        const usbFolder = zip.folder('USBD');
 
         // 尝试使用本地CherryUSB文件夹
         const useLocal = await tryUseLocalCherryUSB(usbFolder);
