@@ -2591,12 +2591,14 @@ function generateCode() {
                                 if (interfaceInfo[i]["VendorDefine"]["Input"]["Enabled"]) {
                                     VendorDefineReportId = interfaceInfo[i]["VendorDefine"]["Input"]["Id"];
                                     inputString += `\
+                                    \r\n#pragma pack(1)\
                                     \r\nstruct {\
                                     ${VendorDefineReportId ? `\
                                         \r\nuint8_t ReportId;
                                         ` : ""}\
                                     \r\nuint8_t Data[${interfaceInfo[i]["VendorDefine"]["Input"]["Size"] - (VendorDefineReportId ? 1 : 0)}];\
                                     \r\n} VendorDefine;\
+                                    \r\n#pragma pack()\
                                     `;
                                 }
 
@@ -2619,6 +2621,7 @@ function generateCode() {
                                 MouseReportId = interfaceInfo[i]["Mouse"]["Id"]["Value"];
 
                                 inputString += `\
+                                \r\n#pragma pack(1)\
                                 \r\nstruct\
                                 \r\n{\
                                 ${MouseReportId ? `\
@@ -2654,6 +2657,7 @@ function generateCode() {
                                 ${interfaceInfo[i]["Mouse"]["Wheel"]["Enabled"] ? "\r\nchar Wheel;" : ""}\
                                 ${interfaceInfo[i]["Mouse"]["AcPan"]["Enabled"] ? "\r\nchar AcPan;" : ""}\
                                 \r\n} Mouse;\
+                                \r\n#pragma pack()\
                                 \r\n`;
 
                                 USBD_Intf_Write_Function_String += `\
@@ -2685,6 +2689,7 @@ function generateCode() {
                                 ${KeyboardReportId ? `\
                                     \r\nuint8_t ReportId;\
                                     ` : ""}\
+                                \r\n#pragma pack(1)\
                                 \r\nstruct\
                                 \r\n{\
                                 \r\nuint8_t LeftCtrl : 1;\
@@ -2699,6 +2704,7 @@ function generateCode() {
                                 \r\nuint8_t : 8;\
                                 \r\nuint8_t NormalKey[${interfaceInfo[i]["Keyboard"]["NormalKey"]["Number"]}];\
                                 \r\n} Keyboard; \
+                                \r\n#pragma pack()\
                                 \r\n`;
 
                                 USBD_Intf_Write_Function_String += `\
@@ -2720,12 +2726,14 @@ function generateCode() {
                                 ConsumerReportId = interfaceInfo[i]["Consumer"]["Id"]["Value"];
 
                                 inputString += `\
+                                \r\n#pragma pack(1)\
                                 \r\nstruct {\
                                 ${ConsumerReportId ? `\
                                     \r\nuint8_t ReportId;\
                                     ` : ""}\
                                 \r\nuint16_t Key[${interfaceInfo[i]["Consumer"]["Key"]["Number"]}];\
                                 \r\n} Consumer;\
+                                \r\n#pragma pack()\
                                 \r\n`;
 
                                 USBD_Intf_Write_Function_String += `\
@@ -2760,12 +2768,10 @@ function generateCode() {
                             \r\n} ReportId;\
                                 ` : ""}\
                             ${inputString != "" ? `\
-                                \r\n#pragma pack(1)\
                                 \r\nunion {\
                                 \r\nuint8_t Buffer[${interfaceInfo[i]["Endpoint"]["In"]["Size"]}];\
                                 ${inputString}\
-                                \r\n} Frame;\
-                                \r\n#pragma pack()\
+                                \r\n} __attribute__((aligned(4))) Frame;\
                                 ` : ""}\
                             \r\n} Input;\
                             `;
@@ -2826,13 +2832,15 @@ function generateCode() {
                                     VendorDefineReportId = interfaceInfo[i]["VendorDefine"]["Output"]["Id"];
 
                                     outputString += `\
+                                    \r\n#pragma pack(1)\
                                     \r\nstruct\
                                     \r\n{\
                                     ${interfaceInfo[i]["VendorDefine"]["Output"]["Id"] ? `\
-                                        \r\nunsigned char ReportId;\
+                                        \r\nuint8_t  ReportId;\
                                         ` : ""}\
-                                    \r\nunsigned char Data[${interfaceInfo[i]["VendorDefine"]["Output"]["Size"] - (interfaceInfo[i]["VendorDefine"]["Output"]["Id"] ? 1 : 0)}];\
+                                    \r\nuint8_t Data[${interfaceInfo[i]["VendorDefine"]["Output"]["Size"] - (interfaceInfo[i]["VendorDefine"]["Output"]["Id"] ? 1 : 0)}];\
                                     \r\n} VendorDefine;\
+                                    \r\n#pragma pack()\
                                     \r\n`;
                                 }
                             }
@@ -2851,12 +2859,10 @@ function generateCode() {
                             \r\n} ReportId;\
                                 ` : ""}\
                             ${outputString != "" ? `\
-                                \r\n#pragma pack(1)\
                                 \r\nunion {\
                                 \r\nuint8_t Buffer[${interfaceInfo[i]["Endpoint"]["Out"]["Size"]}];\
                                 ${outputString}\
-                                \r\n} Frame;\
-                                \r\n#pragma pack()\
+                                \r\n} __attribute__((aligned(4))) Frame;\
                                 ` : ""}\
                             \r\n} Output;\
                             `;
@@ -2917,7 +2923,7 @@ function generateCode() {
                         \r\nconst uint16_t Reversed0 : 1;  // 保留位\
                         \r\nconst uint16_t Reversed1 : 8;  // 高位字节的位字段 (通常全为0)\
                         \r\n} State;\
-                        \r\n} Frame;\
+                        \r\n} __attribute__((packed)) Frame;\
                         \r\n#pragma pack()\
                         \r\n} IntEndpoint;\
                         `;
@@ -2965,7 +2971,7 @@ function generateCode() {
                         \r\nconst uint32_t Address : 8;\
                         \r\nconst uint32_t Size : 24;\
                         \r\n__IO uint8_t State;// Tx done flag\
-                        \r\nuint8_t Buffer[${interfaceInfo[i]["TxLength"]}];\
+                        \r\nuint8_t Buffer[${interfaceInfo[i]["TxLength"]}] __attribute__((aligned(4)));\
                         \r\n} InEndpoint;\
                         `;
 
@@ -3022,7 +3028,7 @@ function generateCode() {
                         \r\nconst uint32_t Address : 8;\
                         \r\nconst uint32_t Size : 24;\
                         \r\n__IO uint8_t State;// Rx done flag\
-                        \r\nuint8_t Buffer[${interfaceInfo[i]["RxLength"]}];\
+                        \r\nuint8_t Buffer[${interfaceInfo[i]["RxLength"]}] __attribute__((aligned(4)));\
                         \r\n} OutEndpoint;\
                         `;
 
@@ -3127,7 +3133,7 @@ function generateCode() {
                             \r\nconst uint32_t Address : 8;\
                             \r\nconst uint32_t Size : 24;\
                             \r\n__IO uint8_t State;// Tx done flag\
-                            \r\nuint8_t Buffer[${interfaceInfo[i]["TxLength"]}];\
+                            \r\nuint8_t Buffer[${interfaceInfo[i]["TxLength"]}] __attribute__((aligned(4)));\
                             \r\n} InEndpoint;\
                             `;
 
@@ -3178,7 +3184,7 @@ function generateCode() {
                             \r\nconst uint32_t Address : 8;\
                             \r\nconst uint32_t Size : 24;\
                             \r\n__IO uint8_t State;// Rx done flag\
-                            \r\nuint8_t Buffer[${interfaceInfo[i]["RxLength"]}];\
+                            \r\nuint8_t Buffer[${interfaceInfo[i]["RxLength"]}] __attribute__((aligned(4)));\
                             \r\n} OutEndpoint;\
                             `;
 
