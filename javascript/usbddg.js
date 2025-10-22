@@ -1292,7 +1292,7 @@ function generateCode() {
                             if (buttonNum) {
                                 let bytes = 0;
                                 buttonNum = buttonNum > 16 ? 16 : buttonNum;
-                                bytes = (buttonNum / 8) + (buttonNum & 0b111) ? 1 : 0;
+                                bytes = buttonNum > 8 ? 2 : 1;
                                 reportSize += bytes;
 
                                 stringTmp += `0x05, 0x09,\t\t// Usage Page (Button)\r\n`;
@@ -2259,7 +2259,7 @@ function generateCode() {
                             `;
 
                             outputString = `\
-                            \r\struct\
+                            \r\nstruct\
                             \r\n{\
                             \r\nconst unsigned int Address : 8;\
                             \r\nconst unsigned int Size : 24;\
@@ -2308,6 +2308,7 @@ function generateCode() {
                         `;
 
                         outputString = `\
+                        \r\nstruct\
                         \r\nstruct\
                         \r\n{\
                         \r\nconst unsigned int Address : 8;\
@@ -2594,7 +2595,7 @@ function generateCode() {
                                     \r\n#pragma pack(1)\
                                     \r\nstruct {\
                                     ${VendorDefineReportId ? `\
-                                        \r\nuint8_t ReportId;
+                                        \r\nuint8_t ReportId;\
                                         ` : ""}\
                                     \r\nuint8_t Data[${interfaceInfo[i]["VendorDefine"]["Input"]["Size"] - (VendorDefineReportId ? 1 : 0)}];\
                                     \r\n} VendorDefine;\
@@ -2630,7 +2631,7 @@ function generateCode() {
                                 ${interfaceInfo[i]["Mouse"]["Button"]["Count"] ?
                                         (() => {
                                             let string = "";
-                                            const dataType = interfaceInfo[i]["Mouse"]["Button"]["Count"] <= 8 ? "unsigned char" : "unsigned short";
+                                            const dataType = interfaceInfo[i]["Mouse"]["Button"]["Count"] <= 8 ? "uint8_t" : "uint16_t";
 
                                             for (let j = 0; j < interfaceInfo[i]["Mouse"]["Button"]["Count"]; j++) {
                                                 string += `\
@@ -2652,10 +2653,10 @@ function generateCode() {
 
                                             return string;
                                         })() : ""}\
-                                ${interfaceInfo[i]["Mouse"]["X"]["Bytes"] < 2 ? "\r\nchar X;" : "\r\nshort X;"}\
-                                ${interfaceInfo[i]["Mouse"]["Y"]["Bytes"] < 2 ? "\r\nchar Y;" : "\r\nshort Y;"}\
-                                ${interfaceInfo[i]["Mouse"]["Wheel"]["Enabled"] ? "\r\nchar Wheel;" : ""}\
-                                ${interfaceInfo[i]["Mouse"]["AcPan"]["Enabled"] ? "\r\nchar AcPan;" : ""}\
+                                ${interfaceInfo[i]["Mouse"]["X"]["Bytes"] < 2 ? "\r\nint8_t X;" : "\r\nint16_t X;"}\
+                                ${interfaceInfo[i]["Mouse"]["Y"]["Bytes"] < 2 ? "\r\nint8_t Y;" : "\r\nint16_t Y;"}\
+                                ${interfaceInfo[i]["Mouse"]["Wheel"]["Enabled"] ? "\r\nint8_t Wheel;" : ""}\
+                                ${interfaceInfo[i]["Mouse"]["AcPan"]["Enabled"] ? "\r\nint8_t AcPan;" : ""}\
                                 \r\n} Mouse;\
                                 \r\n#pragma pack()\
                                 \r\n`;
@@ -2684,12 +2685,12 @@ function generateCode() {
                                 }
 
                                 inputString += `\
+                                \r\n#pragma pack(1)\
                                 \r\nstruct\
                                 \r\n{\
                                 ${KeyboardReportId ? `\
                                     \r\nuint8_t ReportId;\
                                     ` : ""}\
-                                \r\n#pragma pack(1)\
                                 \r\nstruct\
                                 \r\n{\
                                 \r\nuint8_t LeftCtrl : 1;\
@@ -2755,8 +2756,11 @@ function generateCode() {
                             inputString = `\
                             \r\nstruct\
                             \r\n{\
+                            \r\nstruct\
+                            \r\n{\
                             \r\nconst uint32_t Address : 8;\
                             \r\nconst uint32_t Size : 24;\
+                            \r\n};\
                             \r\n__IO uint8_t State;// Tx done flag\
                             ${haveReportId ? `\
                             \r\nstruct\
@@ -2847,10 +2851,13 @@ function generateCode() {
                             haveReportId = VendorDefineReportId;
 
                             outputString = `\
-                            \r\struct\
+                            \r\nstruct \
+                            \r\n{\
+                            \r\nstruct\
                             \r\n{\
                             \r\nconst uint32_t Address : 8;\
                             \r\nconst uint32_t Size : 24;\
+                            \r\n};\
                             \r\n__IO uint8_t State; // Rx done flag\
                             ${haveReportId ? `\
                             \r\nstruct\
@@ -2901,9 +2908,13 @@ function generateCode() {
                         let intTypeDefString = "";
 
                         intTypeDefString = `\
-                        \r\nstruct {\
+                        \r\nstruct\
+                        \r\n{\
+                        \r\nstruct\
+                        \r\n{\
                         \r\nconst uint32_t Address : 8;\
                         \r\nconst uint32_t Size : 24;\
+                        \r\n};\
                         \r\n__IO uint8_t State;// Tx done flag\
                         \r\n#pragma pack(1)\
                         \r\nstruct {\
@@ -2967,9 +2978,14 @@ function generateCode() {
                         functionDefString += `\r\nint USBD_Intf${InterfaceNum}_CDC_ACM_Int_Write_Input(void);`;
 
                         inputTypeDefString = `\
-                        \r\nstruct {\
+                        \r\nstruct\
+                        \r\n{\
+                        \r\nstruct\
+                        \r\n{\
+                        \r\nconst uint32_t Data;\
                         \r\nconst uint32_t Address : 8;\
                         \r\nconst uint32_t Size : 24;\
+                        \r\n};\
                         \r\n__IO uint8_t State;// Tx done flag\
                         \r\nuint8_t Buffer[${interfaceInfo[i]["TxLength"]}] __attribute__((aligned(4)));\
                         \r\n} InEndpoint;\
@@ -3024,9 +3040,13 @@ function generateCode() {
                         functionDefString += `\r\nint USBD_Intf${InterfaceNum + 1}_CDC_ACM_Data_Write_Input(size_t Length);`;
 
                         outputTypeDefString = `\
-                        \r\nstruct {\
+                        \r\nstruct\
+                        \r\n{\
+                        \r\nstruct\
+                        \r\n{\
                         \r\nconst uint32_t Address : 8;\
                         \r\nconst uint32_t Size : 24;\
+                        \r\n};\
                         \r\n__IO uint8_t State;// Rx done flag\
                         \r\nuint8_t Buffer[${interfaceInfo[i]["RxLength"]}] __attribute__((aligned(4)));\
                         \r\n} OutEndpoint;\
@@ -3129,9 +3149,13 @@ function generateCode() {
 
                         if (interfaceInfo[i]["InEpEnabled"]) {
                             inputTypeDefString = `\
-                            \r\nstruct {\
+                            \r\nstruct\
+                            \r\n{\
+                            \r\nstruct\
+                            \r\n{\
                             \r\nconst uint32_t Address : 8;\
                             \r\nconst uint32_t Size : 24;\
+                            \r\n};\
                             \r\n__IO uint8_t State;// Tx done flag\
                             \r\nuint8_t Buffer[${interfaceInfo[i]["TxLength"]}] __attribute__((aligned(4)));\
                             \r\n} InEndpoint;\
@@ -3180,9 +3204,13 @@ function generateCode() {
 
                         if (interfaceInfo[i]["OutEpEnabled"]) {
                             outputTypeDefString = `\
-                            \r\nstruct {\
+                            \r\nstruct\
+                            \r\n{\
+                            \r\nstruct\
+                            \r\n{\
                             \r\nconst uint32_t Address : 8;\
                             \r\nconst uint32_t Size : 24;\
+                            \r\n};\
                             \r\n__IO uint8_t State;// Rx done flag\
                             \r\nuint8_t Buffer[${interfaceInfo[i]["RxLength"]}] __attribute__((aligned(4)));\
                             \r\n} OutEndpoint;\
