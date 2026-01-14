@@ -2592,14 +2592,14 @@ function generateCode() {
                                 if (interfaceInfo[i]["VendorDefine"]["Input"]["Enabled"]) {
                                     VendorDefineReportId = interfaceInfo[i]["VendorDefine"]["Input"]["Id"];
                                     inputString += `\
-                                    \r\n#pragma pack(1)\
+                                    \r\n#pragma pack(push, 1)\
                                     \r\nstruct {\
                                     ${VendorDefineReportId ? `\
                                         \r\nuint8_t ReportId;\
                                         ` : ""}\
                                     \r\nuint8_t Data[${interfaceInfo[i]["VendorDefine"]["Input"]["Size"] - (VendorDefineReportId ? 1 : 0)}];\
                                     \r\n} VendorDefine;\
-                                    \r\n#pragma pack()\
+                                    \r\n#pragma pack(pop)\
                                     `;
                                 }
 
@@ -2622,7 +2622,7 @@ function generateCode() {
                                 MouseReportId = interfaceInfo[i]["Mouse"]["Id"]["Value"];
 
                                 inputString += `\
-                                \r\n#pragma pack(1)\
+                                \r\n#pragma pack(push, 1)\
                                 \r\nstruct\
                                 \r\n{\
                                 ${MouseReportId ? `\
@@ -2658,7 +2658,7 @@ function generateCode() {
                                 ${interfaceInfo[i]["Mouse"]["Wheel"]["Enabled"] ? "\r\nint8_t Wheel;" : ""}\
                                 ${interfaceInfo[i]["Mouse"]["AcPan"]["Enabled"] ? "\r\nint8_t AcPan;" : ""}\
                                 \r\n} Mouse;\
-                                \r\n#pragma pack()\
+                                \r\n#pragma pack(pop)\
                                 \r\n`;
 
                                 USBD_Intf_Write_Function_String += `\
@@ -2685,7 +2685,7 @@ function generateCode() {
                                 }
 
                                 inputString += `\
-                                \r\n#pragma pack(1)\
+                                \r\n#pragma pack(push, 1)\
                                 \r\nstruct\
                                 \r\n{\
                                 ${KeyboardReportId ? `\
@@ -2705,7 +2705,7 @@ function generateCode() {
                                 \r\nuint8_t : 8;\
                                 \r\nuint8_t NormalKey[${interfaceInfo[i]["Keyboard"]["NormalKey"]["Number"]}];\
                                 \r\n} Keyboard; \
-                                \r\n#pragma pack()\
+                                \r\n#pragma pack(pop)\
                                 \r\n`;
 
                                 USBD_Intf_Write_Function_String += `\
@@ -2727,14 +2727,14 @@ function generateCode() {
                                 ConsumerReportId = interfaceInfo[i]["Consumer"]["Id"]["Value"];
 
                                 inputString += `\
-                                \r\n#pragma pack(1)\
+                                \r\n#pragma pack(push, 1)\
                                 \r\nstruct {\
                                 ${ConsumerReportId ? `\
                                     \r\nuint8_t ReportId;\
                                     ` : ""}\
                                 \r\nuint16_t Key[${interfaceInfo[i]["Consumer"]["Key"]["Number"]}];\
                                 \r\n} Consumer;\
-                                \r\n#pragma pack()\
+                                \r\n#pragma pack(pop)\
                                 \r\n`;
 
                                 USBD_Intf_Write_Function_String += `\
@@ -2836,7 +2836,7 @@ function generateCode() {
                                     VendorDefineReportId = interfaceInfo[i]["VendorDefine"]["Output"]["Id"];
 
                                     outputString += `\
-                                    \r\n#pragma pack(1)\
+                                    \r\n#pragma pack(push, 1)\
                                     \r\nstruct\
                                     \r\n{\
                                     ${interfaceInfo[i]["VendorDefine"]["Output"]["Id"] ? `\
@@ -2844,7 +2844,7 @@ function generateCode() {
                                         ` : ""}\
                                     \r\nuint8_t Data[${interfaceInfo[i]["VendorDefine"]["Output"]["Size"] - (interfaceInfo[i]["VendorDefine"]["Output"]["Id"] ? 1 : 0)}];\
                                     \r\n} VendorDefine;\
-                                    \r\n#pragma pack()\
+                                    \r\n#pragma pack(pop)\
                                     \r\n`;
                                 }
                             }
@@ -2916,7 +2916,7 @@ function generateCode() {
                         \r\nconst uint32_t Size : 24;\
                         \r\n};\
                         \r\n__IO uint8_t State;// Tx done flag\
-                        \r\n#pragma pack(1)\
+                        \r\n#pragma pack(push, 1)\
                         \r\nstruct {\
                         \r\nconst uint8_t bmRequestType;    // 请求类型 (固定为 0xA1)\
                         \r\nconst uint8_t bNotification;    // 通知代码 (固定为 0x20)\
@@ -2935,7 +2935,7 @@ function generateCode() {
                         \r\nconst uint16_t Reversed1 : 8;  // 高位字节的位字段 (通常全为0)\
                         \r\n} State;\
                         \r\n} __attribute__((packed)) Frame;\
-                        \r\n#pragma pack()\
+                        \r\n#pragma pack(pop)\
                         \r\n} IntEndpoint;\
                         `;
 
