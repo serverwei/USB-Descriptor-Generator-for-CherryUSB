@@ -3308,7 +3308,7 @@ function generateCode() {
     \r\n#include "main.h"\
     \r\n#include "CherryUSB/core/usbd_core.h"\
     ${haveHid ? `\r\n#include "CherryUSB/class/hid/usbd_hid.h"` : ""}\
-    ${(haveCdc || haveWinUSB) ? `\r\n#include "CherryUSB/class/hid/usbd_cdc_acm.h"` : ""}\
+    ${(haveCdc || haveWinUSB) ? `\r\n#include "CherryUSB/class/cdc/usbd_cdc_acm.h"` : ""}\
     \r\n\
     \r\n#if defined(__CH32F10x_H)\
     \r\n#include "usb_regs.h"\
