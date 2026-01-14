@@ -3052,7 +3052,8 @@ function generateCode() {
                         \r\nconst uint32_t Address : 8;\
                         \r\nconst uint32_t Size : 24;\
                         \r\n};\
-                        \r\n__IO uint8_t State;// Rx done flag\
+                        \r\n__IO uint32_t State : 1;// Rx done flag\
+                        \r\n__IO uint32_t RxLength : 31;\
                         \r\nuint8_t Buffer[${interfaceInfo[i]["RxLength"]}] __attribute__((aligned(4)));\
                         \r\n} OutEndpoint;\
                         `;
@@ -3071,6 +3072,7 @@ function generateCode() {
                             \r\nstatic void USBD_Intf${InterfaceNum + 1}_OutEp0_Callback(uint8_t busid, uint8_t ep, uint32_t nbytes)\
                             \r\n{\
                             \r\nusbd.Intf${InterfaceNum + 1}.OutEndpoint.State = 1;\
+                            \r\nusbd.Intf${InterfaceNum + 1}.OutEndpoint.RxLength = nbytes;\
                             \r\nusbd_ep_start_read(\
                             \r\n\tUSBD_BUSID,\
                             \r\n\tusbd.Intf${InterfaceNum + 1}.OutEndpoint.Address,\
@@ -3199,7 +3201,7 @@ function generateCode() {
                             \r\n    return USBD_InEp_Write(\
                             \r\n        USBD_BUSID,\
                             \r\n        usbd.Intf${InterfaceNum}.InEndpoint.Address,\
-                            \r\n        (uint8_t *)&usbd.Intf${InterfaceNum}.InEndpoint.Buffer,\
+                            \r\n        usbd.Intf${InterfaceNum}.InEndpoint.Buffer,\
                             \r\n        Length,\
                             \r\n        &usbd.Intf${InterfaceNum}.InEndpoint.State);\
                             \r\n}\
@@ -3216,7 +3218,8 @@ function generateCode() {
                             \r\nconst uint32_t Address : 8;\
                             \r\nconst uint32_t Size : 24;\
                             \r\n};\
-                            \r\n__IO uint8_t State;// Rx done flag\
+                            \r\n__IO uint32_t State : 1;// Rx done flag\
+                            \r\n__IO uint32_t RxLength : 31;\
                             \r\nuint8_t Buffer[${interfaceInfo[i]["RxLength"]}] __attribute__((aligned(4)));\
                             \r\n} OutEndpoint;\
                             `;
@@ -3244,6 +3247,7 @@ function generateCode() {
                             \r\nstatic void USBD_Intf${InterfaceNum}_OutEp0_Callback(uint8_t busid, uint8_t ep, uint32_t nbytes)\
                             \r\n{\
                             \r\nusbd.Intf${InterfaceNum}.OutEndpoint.State = 1;\
+                            \r\nusbd.Intf${InterfaceNum}.OutEndpoint.RxLength = nbytes;\
                             \r\nusbd_ep_start_read(\
                             \r\n\tUSBD_BUSID,\
                             \r\n\tusbd.Intf${InterfaceNum}.OutEndpoint.Address,\
