@@ -103,6 +103,9 @@ void usb_dc_low_level_init(void)
 #if defined(STM32F1)
     HAL_NVIC_SetPriority(USB_LP_CAN1_RX0_IRQn, 0, 0);
     HAL_NVIC_EnableIRQ(USB_LP_CAN1_RX0_IRQn);
+#elif defined(STM32G4)
+    HAL_NVIC_SetPriority(USB_LP_IRQn, 0, 0);
+    HAL_NVIC_EnableIRQ(USB_LP_IRQn);
 #else
     HAL_NVIC_SetPriority(USB_IRQn, 0, 0);
     HAL_NVIC_EnableIRQ(USB_IRQn);
@@ -149,6 +152,8 @@ void usb_dc_low_level_deinit(void)
 
 #if defined(STM32F1)
     HAL_NVIC_DisableIRQ(USB_LP_CAN1_RX0_IRQn);
+#elif defined(STM32G4)
+    HAL_NVIC_DisableIRQ(USB_LP_IRQn);
 #else
     HAL_NVIC_DisableIRQ(USB_IRQn);
 #endif
