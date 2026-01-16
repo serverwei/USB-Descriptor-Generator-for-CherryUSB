@@ -2043,7 +2043,7 @@ function generateCode() {
                             //WinUSB descriptor
                             stringTmp = "\r\n/* WinUSB Descriptor*/\r\n";
                             stringTmp += `\
-                            \r\n#pragma pack(4)
+                            \r\n#pragma pack(push, 4)
                             \r\nconst unsigned char Intf${interfaceNum}_WCID_StringDescriptor_MSOS[18] = {\
                             \r\n///////////////////////////////////////\
                             \r\n/// MS OS string descriptor\
@@ -2118,7 +2118,7 @@ function generateCode() {
                             \r\n    Intf${interfaceNum}_WINUSB_IF0_WCIDProperties,\
                             \r\n};\
                             \r\n\
-                            \r\n#pragma pack(0)\
+                            \r\n#pragma pack(pop)\
                             \r\n\
                             `;
 
