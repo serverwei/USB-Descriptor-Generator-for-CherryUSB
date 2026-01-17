@@ -3001,7 +3001,13 @@ function generateCode() {
                         \r\nconst uint32_t Size : 24;\
                         \r\n};\
                         \r\n__IO uint8_t State;// Tx done flag\
-                        \r\nuint8_t Buffer[${interfaceInfo[i]["TxLength"]}] __attribute__((aligned(4)));\
+                        \r\n${(() => {
+                                if (interfaceInfo[i]["TxLength"] == 0) {
+                                    return "uint8_t *Buffer __attribute__((aligned(4)));"
+                                } else {
+                                    return `uint8_t Buffer[${interfaceInfo[i]["TxLength"]}] __attribute__((aligned(4)));`
+                                }
+                            })()}\
                         \r\n} InEndpoint;\
                         `;
 
@@ -3036,22 +3042,43 @@ function generateCode() {
                             \r\n}\
                             `;
 
-                        USBD_Intf_Write_Function_String += `\
-                        \r\nint USBD_Intf${InterfaceNum + 1}_CDC_ACM_Data_Write_Input(size_t Length)\
-                        \r\n{\
-                        \r\n    Length = Length > sizeof(usbd.Intf${InterfaceNum + 1}.InEndpoint.Buffer)\
-                        \r\n        ? sizeof(usbd.Intf${InterfaceNum + 1}.InEndpoint.Buffer) \
-                        \r\n        : Length;\
-                        \r\n\
-                        \r\n    return USBD_InEp_Write(\
-                        \r\n        USBD_BUSID,\
-                        \r\n        usbd.Intf${InterfaceNum + 1}.InEndpoint.Address,\
-                        \r\n        (uint8_t *)&usbd.Intf${InterfaceNum + 1}.InEndpoint.Buffer,\
-                        \r\n        Length,\
-                        \r\n        &usbd.Intf${InterfaceNum + 1}.InEndpoint.State);\
-                        \r\n}\
-                        \r\n`;
-                        functionDefString += `\r\nint USBD_Intf${InterfaceNum + 1}_CDC_ACM_Data_Write_Input(size_t Length);`;
+                        if (interfaceInfo[i]["TxLength"] == 0) {
+                            USBD_Intf_Write_Function_String += `\
+                                \r\nint USBD_Intf${InterfaceNum + 1}_WinUSB_Write_Input(uint8_t *buffer, size_t Length)\
+                                \r\n{\
+                                \r\n    if(buffer == NULL) {\
+                                \r\n        return 0;\
+                                \r\n    }\
+                                \r\n\
+                                \r\n\
+                                \r\n    return USBD_InEp_Write(\
+                                \r\n        USBD_BUSID,\
+                                \r\n        usbd.Intf${InterfaceNum + 1}.InEndpoint.Address,\
+                                \r\n        buffer,\
+                                \r\n        Length,\
+                                \r\n        &usbd.Intf${InterfaceNum + 1}.InEndpoint.State);\
+                                \r\n}\
+                                \r\n`;
+                            functionDefString += `\r\nint USBD_Intf${InterfaceNum + 1}_WinUSB_Write_Input(uint8_t *buffer, size_t Length);`;
+
+                        } else {
+                            USBD_Intf_Write_Function_String += `\
+                                \r\nint USBD_Intf${InterfaceNum + 1}_WinUSB_Write_Input(size_t Length)\
+                                \r\n{\
+                                \r\n    Length = Length > sizeof(usbd.Intf${InterfaceNum + 1}.InEndpoint.Buffer)\
+                                \r\n        ? sizeof(usbd.Intf${InterfaceNum + 1}.InEndpoint.Buffer) \
+                                \r\n        : Length;\
+                                \r\n\
+                                \r\n    return USBD_InEp_Write(\
+                                \r\n        USBD_BUSID,\
+                                \r\n        usbd.Intf${InterfaceNum + 1}.InEndpoint.Address,\
+                                \r\n        usbd.Intf${InterfaceNum + 1}.InEndpoint.Buffer,\
+                                \r\n        Length,\
+                                \r\n        &usbd.Intf${InterfaceNum + 1}.InEndpoint.State);\
+                                \r\n}\
+                                \r\n`;
+                            functionDefString += `\r\nint USBD_Intf${InterfaceNum + 1}_WinUSB_Write_Input(size_t Length);`;
+                        }
 
                         outputTypeDefString = `\
                         \r\nstruct\
@@ -3135,6 +3162,13 @@ function generateCode() {
                         \r\n.Intf${InterfaceNum + 1}.InEndpoint.Address = 0x${toHexFormat(interfaceInfo[i]["InEpAddr"])},\
                         \r\n.Intf${InterfaceNum + 1}.InEndpoint.Size = ${interfaceInfo[i]["MaxMps"]},\
                         \r\n.Intf${InterfaceNum + 1}.InEndpoint.State = 0,\
+                        \r\n${(() => {
+                                if (interfaceInfo[i]["TxLength"] == 0) {
+                                    return `.Intf${InterfaceNum}.InEndpoint.Buffer = NULL,`
+                                } else {
+                                    return "";
+                                }
+                            })()}\
                         \r\n.Intf${InterfaceNum + 1}.OutEndpoint.Address = 0x${toHexFormat(interfaceInfo[i]["OutEpAddr"])},\
                         \r\n.Intf${InterfaceNum + 1}.OutEndpoint.Size = ${interfaceInfo[i]["MaxMps"]},\
                         \r\n.Intf${InterfaceNum + 1}.OutEndpoint.State = 0,\
@@ -3173,7 +3207,13 @@ function generateCode() {
                             \r\nconst uint32_t Size : 24;\
                             \r\n};\
                             \r\n__IO uint8_t State;// Tx done flag\
-                            \r\nuint8_t Buffer[${interfaceInfo[i]["TxLength"]}] __attribute__((aligned(4)));\
+                            \r\n${(() => {
+                                    if (interfaceInfo[i]["TxLength"] == 0) {
+                                        return "uint8_t *Buffer __attribute__((aligned(4)));"
+                                    } else {
+                                        return `uint8_t Buffer[${interfaceInfo[i]["TxLength"]}] __attribute__((aligned(4)));`
+                                    }
+                                })()}\
                             \r\n} InEndpoint;\
                             `;
 
@@ -3200,22 +3240,44 @@ function generateCode() {
                             \r\n}\
                             `;
 
-                            USBD_Intf_Write_Function_String += `\
-                            \r\nint USBD_Intf${InterfaceNum}_WinUSB_Write_Input(size_t Length)\
-                            \r\n{\
-                            \r\n    Length = Length > sizeof(usbd.Intf${InterfaceNum}.InEndpoint.Buffer)\
-                            \r\n        ? sizeof(usbd.Intf${InterfaceNum}.InEndpoint.Buffer) \
-                            \r\n        : Length;\
-                            \r\n\
-                            \r\n    return USBD_InEp_Write(\
-                            \r\n        USBD_BUSID,\
-                            \r\n        usbd.Intf${InterfaceNum}.InEndpoint.Address,\
-                            \r\n        usbd.Intf${InterfaceNum}.InEndpoint.Buffer,\
-                            \r\n        Length,\
-                            \r\n        &usbd.Intf${InterfaceNum}.InEndpoint.State);\
-                            \r\n}\
-                            \r\n`;
-                            functionDefString += `\r\nint USBD_Intf${InterfaceNum}_WinUSB_Write_Input(size_t Length);`;
+                            if (interfaceInfo[i]["TxLength"] == 0) {
+                                USBD_Intf_Write_Function_String += `\
+                                \r\nint USBD_Intf${InterfaceNum}_WinUSB_Write_Input(uint8_t *buffer, size_t Length)\
+                                \r\n{\
+                                \r\n    if(buffer == NULL) {\
+                                \r\n        return 0;\
+                                \r\n    }\
+                                \r\n\
+                                \r\n\
+                                \r\n    return USBD_InEp_Write(\
+                                \r\n        USBD_BUSID,\
+                                \r\n        usbd.Intf${InterfaceNum}.InEndpoint.Address,\
+                                \r\n        buffer,\
+                                \r\n        Length,\
+                                \r\n        &usbd.Intf${InterfaceNum}.InEndpoint.State);\
+                                \r\n}\
+                                \r\n`;
+                                functionDefString += `\r\nint USBD_Intf${InterfaceNum}_WinUSB_Write_Input(uint8_t *buffer, size_t Length);`;
+
+                            } else {
+                                USBD_Intf_Write_Function_String += `\
+                                \r\nint USBD_Intf${InterfaceNum}_WinUSB_Write_Input(size_t Length)\
+                                \r\n{\
+                                \r\n    Length = Length > sizeof(usbd.Intf${InterfaceNum}.InEndpoint.Buffer)\
+                                \r\n        ? sizeof(usbd.Intf${InterfaceNum}.InEndpoint.Buffer) \
+                                \r\n        : Length;\
+                                \r\n\
+                                \r\n    return USBD_InEp_Write(\
+                                \r\n        USBD_BUSID,\
+                                \r\n        usbd.Intf${InterfaceNum}.InEndpoint.Address,\
+                                \r\n        usbd.Intf${InterfaceNum}.InEndpoint.Buffer,\
+                                \r\n        Length,\
+                                \r\n        &usbd.Intf${InterfaceNum}.InEndpoint.State);\
+                                \r\n}\
+                                \r\n`;
+                                functionDefString += `\r\nint USBD_Intf${InterfaceNum}_WinUSB_Write_Input(size_t Length);`;
+                            }
+
                         }
 
                         if (interfaceInfo[i]["OutEpEnabled"]) {
@@ -3284,6 +3346,13 @@ function generateCode() {
                             \r\n.Intf${InterfaceNum}.InEndpoint.Address = 0x${toHexFormat(interfaceInfo[i]["InEpAddr"])},\
                             \r\n.Intf${InterfaceNum}.InEndpoint.Size = 64,\
                             \r\n.Intf${InterfaceNum}.InEndpoint.State = 0,\
+                            \r\n${(() => {
+                                    if (interfaceInfo[i]["TxLength"] == 0) {
+                                        return `.Intf${InterfaceNum}.InEndpoint.Buffer = NULL,`
+                                    } else {
+                                        return "";
+                                    }
+                                })()}\
                             ` : ""}\
                         ${interfaceInfo[i]["OutEpEnabled"] ? `\
                             \r\n.Intf${InterfaceNum}.OutEndpoint.Address = 0x${toHexFormat(interfaceInfo[i]["OutEpAddr"])},\
