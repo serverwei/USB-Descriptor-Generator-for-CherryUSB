@@ -2252,8 +2252,8 @@ function generateCode() {
                         \r\n.Intf${InterfaceNum}.Type = 0,\
                         \r\n.Intf${InterfaceNum}.Descriptor.buffer = Intf${i}Desc,\
                         \r\n.Intf${InterfaceNum}.Descriptor.Length = ${interfaceDescriptorStringLength[i]},\
-                        \r\n.Intf${InterfaceNum}.Input.Address = 0x${toHexFormat(interfaceInfo[i]["Endpoint"]["In"]["Addr"])},\
-                        \r\n.Intf${InterfaceNum}.Input.Size = ${interfaceInfo[i]["Endpoint"]["In"]["Size"]},\
+                        \r\n.Intf${InterfaceNum}.InEndpoint.Address = 0x${toHexFormat(interfaceInfo[i]["Endpoint"]["In"]["Addr"])},\
+                        \r\n.Intf${InterfaceNum}.InEndpoint.Size = ${interfaceInfo[i]["Endpoint"]["In"]["Size"]},\
                         `;
 
                         if (interfaceInfo[i]["Endpoint"]["In"]["Enabled"]) {
@@ -2262,14 +2262,14 @@ function generateCode() {
                             \r\n{\
                             \r\nconst unsigned int Address : 8;\
                             \r\nconst unsigned int Size : 24;\
-                            \r\n} Input;\
+                            \r\n} InEndpoint;\
                             `;
                         }
 
                         if (interfaceInfo[i]["Endpoint"]["Out"]["Enabled"]) {
                             defineString += `\
-                            \r\n.Intf${InterfaceNum}.Output.Address = 0x${toHexFormat(interfaceInfo[i]["Endpoint"]["Out"]["Addr"])},\
-                            \r\n.Intf${InterfaceNum}.Output.Size = ${interfaceInfo[i]["Endpoint"]["Out"]["Size"]},\
+                            \r\n.Intf${InterfaceNum}.OutEndpoint.Address = 0x${toHexFormat(interfaceInfo[i]["Endpoint"]["Out"]["Addr"])},\
+                            \r\n.Intf${InterfaceNum}.OutEndpoint.Size = ${interfaceInfo[i]["Endpoint"]["Out"]["Size"]},\
                             `;
 
                             outputString = `\
@@ -2277,7 +2277,7 @@ function generateCode() {
                             \r\n{\
                             \r\nconst unsigned int Address : 8;\
                             \r\nconst unsigned int Size : 24;\
-                            \r\n} Output;\
+                            \r\n} OutEndpoint;\
                             `;
                         }
 
@@ -2597,7 +2597,7 @@ function generateCode() {
                             USBD_Ep_Callback_String += `\
                             \r\nstatic void USBD_Intf${InterfaceNum}_InEp0_Callback(uint8_t busid, uint8_t ep, uint32_t nbytes)\
                             \r\n{\
-                            \r\nusbd.Intf${InterfaceNum}.Input.State = USBD_STATE_IDLE;\
+                            \r\nusbd.Intf${InterfaceNum}.InEndpoint.State = USBD_STATE_IDLE;\
                             \r\n}\
                             `;
 
@@ -2622,10 +2622,10 @@ function generateCode() {
                                 \r\n{\
                                 \r\n    return USBD_InEp_Write(\
                                 \r\n        USBD_BUSID,\
-                                \r\n        usbd.Intf${InterfaceNum}.Input.Address,\
-                                \r\n        (uint8_t *)&usbd.Intf${InterfaceNum}.Input.Frame.VendorDefine,\
-                                \r\n        sizeof(usbd.Intf${InterfaceNum}.Input.Frame.VendorDefine),\
-                                \r\n        &usbd.Intf${InterfaceNum}.Input.State);\
+                                \r\n        usbd.Intf${InterfaceNum}.InEndpoint.Address,\
+                                \r\n        (uint8_t *)&usbd.Intf${InterfaceNum}.InEndpoint.Frame.VendorDefine,\
+                                \r\n        sizeof(usbd.Intf${InterfaceNum}.InEndpoint.Frame.VendorDefine),\
+                                \r\n        &usbd.Intf${InterfaceNum}.InEndpoint.State);\
                                 \r\n}\
                                 \r\n`;
                                 functionDefString += `\r\nint USBD_Intf${InterfaceNum}_VendorApp_Write_Input(void);`;
@@ -2680,10 +2680,10 @@ function generateCode() {
                                 \r\n{\
                                 \r\n    return USBD_InEp_Write(\
                                 \r\n        USBD_BUSID,\
-                                \r\n        usbd.Intf${InterfaceNum}.Input.Address,\
-                                \r\n        (uint8_t *)&usbd.Intf${InterfaceNum}.Input.Frame.Mouse,\
-                                \r\n        sizeof(usbd.Intf${InterfaceNum}.Input.Frame.Mouse),\
-                                \r\n        &usbd.Intf${InterfaceNum}.Input.State);\
+                                \r\n        usbd.Intf${InterfaceNum}.InEndpoint.Address,\
+                                \r\n        (uint8_t *)&usbd.Intf${InterfaceNum}.InEndpoint.Frame.Mouse,\
+                                \r\n        sizeof(usbd.Intf${InterfaceNum}.InEndpoint.Frame.Mouse),\
+                                \r\n        &usbd.Intf${InterfaceNum}.InEndpoint.State);\
                                 \r\n}\
                                 \r\n`;
                                 functionDefString += `\r\nint USBD_Intf${InterfaceNum}_Mouse_Write_Input(void);`;
@@ -2727,10 +2727,10 @@ function generateCode() {
                                 \r\n{\
                                 \r\n    return USBD_InEp_Write(\
                                 \r\n        USBD_BUSID,\
-                                \r\n        usbd.Intf${InterfaceNum}.Input.Address,\
-                                \r\n        (uint8_t *)&usbd.Intf${InterfaceNum}.Input.Frame.Keyboard,\
-                                \r\n        sizeof(usbd.Intf${InterfaceNum}.Input.Frame.Keyboard),\
-                                \r\n        &usbd.Intf${InterfaceNum}.Input.State);\
+                                \r\n        usbd.Intf${InterfaceNum}.InEndpoint.Address,\
+                                \r\n        (uint8_t *)&usbd.Intf${InterfaceNum}.InEndpoint.Frame.Keyboard,\
+                                \r\n        sizeof(usbd.Intf${InterfaceNum}.InEndpoint.Frame.Keyboard),\
+                                \r\n        &usbd.Intf${InterfaceNum}.InEndpoint.State);\
                                 \r\n}\
                                 \r\n`;
                                 functionDefString += `\r\nint USBD_Intf${InterfaceNum}_Keyboard_Write_Input(void);`;
@@ -2756,10 +2756,10 @@ function generateCode() {
                                 \r\n{\
                                 \r\n    return USBD_InEp_Write(\
                                 \r\n        USBD_BUSID,\
-                                \r\n        usbd.Intf${InterfaceNum}.Input.Address,\
-                                \r\n        (uint8_t *)&usbd.Intf${InterfaceNum}.Input.Frame.Consumer,\
-                                \r\n        sizeof(usbd.Intf${InterfaceNum}.Input.Frame.Consumer),\
-                                \r\n        &usbd.Intf${InterfaceNum}.Input.State);\
+                                \r\n        usbd.Intf${InterfaceNum}.InEndpoint.Address,\
+                                \r\n        (uint8_t *)&usbd.Intf${InterfaceNum}.InEndpoint.Frame.Consumer,\
+                                \r\n        sizeof(usbd.Intf${InterfaceNum}.InEndpoint.Frame.Consumer),\
+                                \r\n        &usbd.Intf${InterfaceNum}.InEndpoint.State);\
                                 \r\n}\
                                 \r\n`;
                                 functionDefString += `\r\nint USBD_Intf${InterfaceNum}_Consumer_Write_Input(void);`;
@@ -2791,18 +2791,18 @@ function generateCode() {
                                 ${inputString}\
                                 \r\n} __attribute__((aligned(4))) Frame;\
                                 ` : ""}\
-                            \r\n} Input;\
+                            \r\n} InEndpoint;\
                             `;
 
                             USBD_TypeDef_Init_String += `\
-                            \r\n.Intf${InterfaceNum}.Input.Address = 0x${toHexFormat(interfaceInfo[i]["Endpoint"]["In"]["Addr"])},\
-                            \r\n.Intf${InterfaceNum}.Input.Size = ${interfaceInfo[i]["Endpoint"]["In"]["Size"]},\
-                            \r\n.Intf${InterfaceNum}.Input.State = 0,\
+                            \r\n.Intf${InterfaceNum}.InEndpoint.Address = 0x${toHexFormat(interfaceInfo[i]["Endpoint"]["In"]["Addr"])},\
+                            \r\n.Intf${InterfaceNum}.InEndpoint.Size = ${interfaceInfo[i]["Endpoint"]["In"]["Size"]},\
+                            \r\n.Intf${InterfaceNum}.InEndpoint.State = 0,\
                             ${haveReportId ? `\
-                            ${VendorDefineReportId ? `\r\r.Intf${InterfaceNum}.Input.ReportId.VendorDefine = ${VendorDefineReportId}\,` : ""}\
-                            ${MouseReportId ? `\r\r.Intf${InterfaceNum}.Input.ReportId.Mouse = ${MouseReportId}\,` : ""}\
-                            ${KeyboardReportId ? `\r\r.Intf${InterfaceNum}.Input.ReportId.Keyboard = ${KeyboardReportId}\,` : ""}\
-                            ${ConsumerReportId ? `\r\r.Intf${InterfaceNum}.Input.ReportId.Consumer = ${ConsumerReportId}\,` : ""}\
+                            ${VendorDefineReportId ? `\r\r.Intf${InterfaceNum}.InEndpoint.ReportId.VendorDefine = ${VendorDefineReportId}\,` : ""}\
+                            ${MouseReportId ? `\r\r.Intf${InterfaceNum}.InEndpoint.ReportId.Mouse = ${MouseReportId}\,` : ""}\
+                            ${KeyboardReportId ? `\r\r.Intf${InterfaceNum}.InEndpoint.ReportId.Keyboard = ${KeyboardReportId}\,` : ""}\
+                            ${ConsumerReportId ? `\r\r.Intf${InterfaceNum}.InEndpoint.ReportId.Consumer = ${ConsumerReportId}\,` : ""}\
                                 ` : ""}\
                             `;
                         }
@@ -2827,12 +2827,12 @@ function generateCode() {
                             USBD_Ep_Callback_String += `\
                             \r\nstatic void USBD_Intf${InterfaceNum}_OutEp0_Callback(uint8_t busid, uint8_t ep, uint32_t nbytes)\
                             \r\n{\
-                            \r\nusbd.Intf${InterfaceNum}.Output.State = 1;\               
+                            \r\nusbd.Intf${InterfaceNum}.OutEndpoint.State = 1;\               
                             \r\nusbd_ep_start_read(\
                             \r\n\tUSBD_BUSID,\
-                            \r\n\tusbd.Intf${InterfaceNum}.Output.Address,\
-                            \r\n\tusbd.Intf${InterfaceNum}.Output.Frame.Buffer,\
-                            \r\n\tsizeof(usbd.Intf${InterfaceNum}.Output.Frame.Buffer));\
+                            \r\n\tusbd.Intf${InterfaceNum}.OutEndpoint.Address,\
+                            \r\n\tusbd.Intf${InterfaceNum}.OutEndpoint.Frame.Buffer,\
+                            \r\n\tsizeof(usbd.Intf${InterfaceNum}.OutEndpoint.Frame.Buffer));\
                             \r\n}\
                             `;
 
@@ -2842,9 +2842,9 @@ function generateCode() {
                                     USBD_Event_Handler_String += `\
                                     \r\nusbd_ep_start_read(\
                                     \r\n\tUSBD_BUSID,\
-                                    \r\n\tusbd.Intf${InterfaceNum}.Output.Address,\
-                                    \r\n\tusbd.Intf${InterfaceNum}.Output.Frame.Buffer,\
-                                    \r\n\tsizeof(usbd.Intf${InterfaceNum}.Output.Frame.Buffer));\
+                                    \r\n\tusbd.Intf${InterfaceNum}.OutEndpoint.Address,\
+                                    \r\n\tusbd.Intf${InterfaceNum}.OutEndpoint.Frame.Buffer,\
+                                    \r\n\tsizeof(usbd.Intf${InterfaceNum}.OutEndpoint.Frame.Buffer));\
                                     `;
 
                                     VendorDefineReportId = interfaceInfo[i]["VendorDefine"]["Output"]["Id"];
@@ -2885,15 +2885,15 @@ function generateCode() {
                                 ${outputString}\
                                 \r\n} __attribute__((aligned(4))) Frame;\
                                 ` : ""}\
-                            \r\n} Output;\
+                            \r\n} OutEndpoint;\
                             `;
 
                             USBD_TypeDef_Init_String += `\
-                            \r\n.Intf${InterfaceNum}.Output.Address = 0x${toHexFormat(interfaceInfo[i]["Endpoint"]["Out"]["Addr"])},\
-                            \r\n.Intf${InterfaceNum}.Output.Size = ${interfaceInfo[i]["Endpoint"]["Out"]["Size"]},\
-                            \r\n.Intf${InterfaceNum}.Output.State = 0,\
+                            \r\n.Intf${InterfaceNum}.OutEndpoint.Address = 0x${toHexFormat(interfaceInfo[i]["Endpoint"]["Out"]["Addr"])},\
+                            \r\n.Intf${InterfaceNum}.OutEndpoint.Size = ${interfaceInfo[i]["Endpoint"]["Out"]["Size"]},\
+                            \r\n.Intf${InterfaceNum}.OutEndpoint.State = 0,\
                             ${VendorDefineReportId ? `\
-                                \r\r.Intf${InterfaceNum}.Output.ReportId.VendorDefine = ${VendorDefineReportId},
+                                \r\r.Intf${InterfaceNum}.OutEndpoint.ReportId.VendorDefine = ${VendorDefineReportId},
                                 ` : ""}\
                             `;
                         }
