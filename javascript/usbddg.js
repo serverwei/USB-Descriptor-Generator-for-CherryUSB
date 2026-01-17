@@ -77,6 +77,15 @@ const USB_DC_INIT_DEINIT_IRQ = `\
 void usb_dc_low_level_init(void)
 {
 #if defined(STM32G4) || defined(STM32F0)
+    RCC_OscInitTypeDef RCC_OscInitStruct = {0};
+
+    RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI48;
+    RCC_OscInitStruct.HSI48State     = RCC_HSI48_ON;
+
+    if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK) {
+        Error_Handler();
+    }
+
     RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
 
     PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USB;
