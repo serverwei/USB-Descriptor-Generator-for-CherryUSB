@@ -76,7 +76,8 @@ const USB_DC_INIT_DEINIT_IRQ = `\
 #if defined(STM32F0) || defined(STM32L0) || defined(STM32G4) || defined(STM32F1)
 void usb_dc_low_level_init(void)
 {
-#if defined(STM32G4) || defined(STM32F0)
+#if defined(RCC_OSCILLATORTYPE_HSI48)
+    // #if defined(STM32G4) || defined(STM32F0) || defined(STM32L0)
     RCC_OscInitTypeDef RCC_OscInitStruct = {0};
 
     RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI48;
