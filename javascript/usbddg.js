@@ -2324,7 +2324,6 @@ function generateCode() {
 
                         outputString = `\
                         \r\nstruct\
-                        \r\nstruct\
                         \r\n{\
                         \r\nconst unsigned int Address : 8;\
                         \r\nconst unsigned int Size : 24;\
@@ -3045,7 +3044,7 @@ function generateCode() {
 
                         if (interfaceInfo[i]["TxLength"] == 0) {
                             USBD_Intf_Write_Function_String += `\
-                                \r\nint USBD_Intf${InterfaceNum + 1}_WinUSB_Write_Input(uint8_t *buffer, size_t Length)\
+                                \r\nint USBD_Intf${InterfaceNum + 1}_CDC_ACM_Write_Input(uint8_t *buffer, size_t Length)\
                                 \r\n{\
                                 \r\n    if(buffer == NULL) {\
                                 \r\n        return 0;\
@@ -3060,11 +3059,11 @@ function generateCode() {
                                 \r\n        &usbd.Intf${InterfaceNum + 1}.InEndpoint.State);\
                                 \r\n}\
                                 \r\n`;
-                            functionDefString += `\r\nint USBD_Intf${InterfaceNum + 1}_WinUSB_Write_Input(uint8_t *buffer, size_t Length);`;
+                            functionDefString += `\r\nint USBD_Intf${InterfaceNum + 1}_CDC_ACM_Write_Input(uint8_t *buffer, size_t Length);`;
 
                         } else {
                             USBD_Intf_Write_Function_String += `\
-                                \r\nint USBD_Intf${InterfaceNum + 1}_WinUSB_Write_Input(size_t Length)\
+                                \r\nint USBD_Intf${InterfaceNum + 1}_CDC_ACM_Write_Input(size_t Length)\
                                 \r\n{\
                                 \r\n    Length = Length > sizeof(usbd.Intf${InterfaceNum + 1}.InEndpoint.Buffer)\
                                 \r\n        ? sizeof(usbd.Intf${InterfaceNum + 1}.InEndpoint.Buffer) \
@@ -3078,7 +3077,7 @@ function generateCode() {
                                 \r\n        &usbd.Intf${InterfaceNum + 1}.InEndpoint.State);\
                                 \r\n}\
                                 \r\n`;
-                            functionDefString += `\r\nint USBD_Intf${InterfaceNum + 1}_WinUSB_Write_Input(size_t Length);`;
+                            functionDefString += `\r\nint USBD_Intf${InterfaceNum + 1}_CDC_ACM_Write_Input(size_t Length);`;
                         }
 
                         outputTypeDefString = `\
