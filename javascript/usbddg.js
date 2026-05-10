@@ -73,6 +73,7 @@ const USB_DC_INIT_DEINIT_IRQ = `\
 #define USB_BASE RegBase
 #endif
 
+#pragma region usb_dc_low_level_init
 #if defined(STM32F0) || defined(STM32L0) || defined(STM32G4) || defined(STM32F1)
 void usb_dc_low_level_init(void)
 {
@@ -121,7 +122,9 @@ void usb_dc_low_level_init(void)
     HAL_NVIC_EnableIRQ(USB_IRQn);
 #endif
 }
+#pragma endregion usb_dc_low_level_init
 
+#pragma region usb_dc_low_level_deinit
 #elif defined(__CH32F10x_H)
 void usb_dc_low_level_init(void)
 {
@@ -182,7 +185,9 @@ void usb_dc_low_level_deinit(void)
 
 #endif
 }
+#pragma endregion usb_dc_low_level_deinit
 
+#pragma region USB_IRQHandler
 #if defined(STM32F0) || defined(STM32L0)
 void USB_IRQHandler(void)
 {
@@ -211,7 +216,9 @@ void USB_IRQHandler(void)
     extern void USBD_IRQHandler(uint8_t busid);
     USBD_IRQHandler(USBD_BUSID);
 }
-#endif\
+#endif
+#pragma endregion USB_IRQHandler\
+\r\n\
 `;
 
 /**
@@ -2505,6 +2512,7 @@ function generateCode() {
     let haveWinUSB = false;
     let haveKeyboard = false;
     let functionDefString = "";
+    let callbackfunctionDefString = "";
     let USBD_Event_Handler_String = "";
     let USBD_Ep_Callback_String = "";
     let USBD_Intf_Init_String = "";
@@ -2524,30 +2532,106 @@ function generateCode() {
     \r\n\
     ${USB_DC_INIT_DEINIT_IRQ}\
     \r\n\
-    \r\nint USBD_InEp_Write(uint8_t Usb_BusId, uint8_t InEp, uint8_t *data, size_t Length, __IO uint8_t *state)\
-    \r\n{\
-    \r\n    if (!usb_device_is_configured(Usb_BusId)) {\
-    \r\n         return -1;\
-    \r\n    }\
-    \r\n\
-    \r\n    if (!data || !state || !Length || !(InEp >> 7)) {\
-    \r\n        return -2;\
-    \r\n    }\
-    \r\n\
-    \r\n    if(*state != USBD_STATE_IDLE) {\
-    \r\n        return -3;\
-    \r\n    }\
-    \r\n\        
-    \r\n    *state = USBD_STATE_BUSY;\
-    \r\n    if (usbd_ep_start_write(Usb_BusId, InEp, data, Length) < 0) {\
-    \r\n        *state = USBD_STATE_IDLE;\
-    \r\n        return -4;\
-    \r\n    } else {\
-    \r\n        while (*state == USBD_STATE_BUSY) {\
-    \r\n        }\
-    \r\n        return 0;\
-    \r\n    }\
-    \r\n}\
+#pragma region USBD_InEp_Write_Timeout
+int USBD_InEp_Write_Timeout(uint8_t Usb_BusId, uint8_t InEp, const uint8_t *data, size_t Length, __IO uint8_t *state, size_t Timeout_Ms)
+{
+    if (!usb_device_is_configured(Usb_BusId)) {
+        return -1;
+    }
+
+    if (!data || !state || !Length || !(InEp >> 7)) {
+        return -2;
+    }
+
+    if (*state != USBD_STATE_IDLE) {
+        return -3;
+    }
+
+    *state = USBD_STATE_BUSY;
+    if (usbd_ep_start_write(Usb_BusId, InEp, data, Length) < 0) {
+        *state = USBD_STATE_IDLE;
+        return -4;
+    }
+
+    if (Timeout_Ms && usbd.Timeout.Get_SysTick != NULL) {
+        size_t start_tick = usbd.Timeout.Get_SysTick();
+        size_t wait_ticks = Timeout_Ms * usbd.Timeout.Tick_Per_Ms;
+
+        while (*state == USBD_STATE_BUSY) {
+            if ((usbd.Timeout.Get_SysTick() - start_tick) >= wait_ticks) {
+                usbd_ep_set_stall(Usb_BusId, InEp);
+                usbd_ep_clear_stall(Usb_BusId, InEp);
+                *state = USBD_STATE_IDLE;
+                return -5;
+            }
+        }
+    } else {
+        while (*state == USBD_STATE_BUSY) {
+        }
+    }
+
+    return 0;
+}
+#pragma endregion USBD_InEp_Write_Timeout
+
+#pragma region USBD_InEp_Write_IT
+int USBD_InEp_Write_IT(uint8_t Usb_BusId, uint8_t InEp, const uint8_t *data, size_t Length, __IO uint8_t *state)
+{
+    if (!usb_device_is_configured(Usb_BusId)) {
+        return -1;
+    }
+
+    if (!data || !state || !Length || !(InEp >> 7)) {
+        return -2;
+    }
+
+    if (*state != USBD_STATE_IDLE) {
+        return -3;
+    }
+
+    *state = USBD_STATE_BUSY;
+    if (usbd_ep_start_write(Usb_BusId, InEp, data, Length) < 0) {
+        *state = USBD_STATE_IDLE;
+        return -4;
+    }
+
+    return 0;
+}
+#pragma endregion USBD_InEp_Write_IT
+
+#pragma region USBD_Event_Callback
+__weak void USBD_Event_Reset_Callback(uint8_t busid)
+{
+}
+
+__weak void USBD_Event_Connected_Callback(uint8_t busid)
+{
+}
+
+__weak void USBD_Event_Disconnected_Callback(uint8_t busid)
+{
+}
+
+__weak void USBD_Event_Resume_Callback(uint8_t busid)
+{
+}
+
+__weak void USBD_Event_Suspend_Callback(uint8_t busid)
+{
+}
+
+__weak void USBD_Event_Configured_Callback(uint8_t busid)
+{
+}
+
+__weak void USBD_Event_Set_Remote_Wakeup_Callback(uint8_t busid)
+{
+}
+
+__weak void USBD_Event_Clr_Remote_Wakeup_Callback(uint8_t busid)
+{
+}
+#pragma endregion USBD_Event_Callback
     \r\n\
     `;
 
@@ -2586,7 +2670,7 @@ function generateCode() {
                             USBD_Ep_Init_String += `\
                             \r\nstatic struct usbd_endpoint Intf${InterfaceNum}InEp0 = {\
                             \r\n.ep_addr = 0x${toHexFormat(interfaceInfo[i]["Endpoint"]["In"]["Addr"])},\
-                            \r\n.ep_cb = USBD_Intf${InterfaceNum}_InEp0_Callback,\
+                            \r\n.ep_cb = USBD_Intf${InterfaceNum}_InEp0_Handler,\
                             \r\n};\
                             `;
 
@@ -2595,10 +2679,18 @@ function generateCode() {
                             `;
 
                             USBD_Ep_Callback_String += `\
-                            \r\nstatic void USBD_Intf${InterfaceNum}_InEp0_Callback(uint8_t busid, uint8_t ep, uint32_t nbytes)\
+                            \r\n__weak void USBD_Intf${InterfaceNum}_InEp0_CpltCallback(uint8_t busid, uint8_t ep, uint32_t nbytes)\
                             \r\n{\
-                            \r\nusbd.Intf${InterfaceNum}.InEndpoint.State = USBD_STATE_IDLE;\
                             \r\n}\
+                            \r\nstatic void USBD_Intf${InterfaceNum}_InEp0_Handler(uint8_t busid, uint8_t ep, uint32_t nbytes)\
+                            \r\n{\
+                            \r\n\tusbd.Intf${InterfaceNum}.InEndpoint.State = USBD_STATE_IDLE;\
+                            \r\n\tUSBD_Intf${InterfaceNum}_InEp0_CpltCallback(busid, ep, nbytes);\
+                            \r\n}\
+                            `;
+
+                            callbackfunctionDefString += `\
+                            \r\nvoid USBD_Intf${InterfaceNum}_InEp0_CpltCallback(uint8_t busid, uint8_t ep, uint32_t nbytes);\
                             `;
 
                             //Vendor define
@@ -2618,9 +2710,20 @@ function generateCode() {
                                 }
 
                                 USBD_Intf_Write_Function_String += `\
-                                \r\nint USBD_Intf${InterfaceNum}_VendorApp_Write_Input(void)\
+                                \r\nint USBD_Intf${InterfaceNum}_VendorApp_Write_Input_Timeout(size_t Timeout_Ms)\
                                 \r\n{\
-                                \r\n    return USBD_InEp_Write(\
+                                \r\n    return USBD_InEp_Write_Timeout(\
+                                \r\n        USBD_BUSID,\
+                                \r\n        usbd.Intf${InterfaceNum}.InEndpoint.Address,\
+                                \r\n        (uint8_t *)&usbd.Intf${InterfaceNum}.InEndpoint.Frame.VendorDefine,\
+                                \r\n        sizeof(usbd.Intf${InterfaceNum}.InEndpoint.Frame.VendorDefine),\
+                                \r\n        &usbd.Intf${InterfaceNum}.InEndpoint.State,\
+                                \r\n        Timeout_Ms);\
+                                \r\n}\
+                                \r\n\
+                                \r\nint USBD_Intf${InterfaceNum}_VendorApp_Write_Input_IT(void)\
+                                \r\n{\
+                                \r\n    return USBD_InEp_Write_IT(\
                                 \r\n        USBD_BUSID,\
                                 \r\n        usbd.Intf${InterfaceNum}.InEndpoint.Address,\
                                 \r\n        (uint8_t *)&usbd.Intf${InterfaceNum}.InEndpoint.Frame.VendorDefine,\
@@ -2628,7 +2731,10 @@ function generateCode() {
                                 \r\n        &usbd.Intf${InterfaceNum}.InEndpoint.State);\
                                 \r\n}\
                                 \r\n`;
-                                functionDefString += `\r\nint USBD_Intf${InterfaceNum}_VendorApp_Write_Input(void);`;
+                                functionDefString += `
+                                \r\nint USBD_Intf${InterfaceNum}_VendorApp_Write_Input_Timeout(size_t Timeout_Ms);\
+                                \r\nint USBD_Intf${InterfaceNum}_VendorApp_Write_Input_IT(void);\
+                                `;
                             }
 
                             //Mouse
@@ -2676,9 +2782,20 @@ function generateCode() {
                                 \r\n`;
 
                                 USBD_Intf_Write_Function_String += `\
-                                \r\nint USBD_Intf${InterfaceNum}_Mouse_Write_Input(void)\
+                                \r\nint USBD_Intf${InterfaceNum}_Mouse_Write_Timeout(size_t Timeout_Ms)\
                                 \r\n{\
-                                \r\n    return USBD_InEp_Write(\
+                                \r\n    return USBD_InEp_Write_Timeout(\
+                                \r\n        USBD_BUSID,\
+                                \r\n        usbd.Intf${InterfaceNum}.InEndpoint.Address,\
+                                \r\n        (uint8_t *)&usbd.Intf${InterfaceNum}.InEndpoint.Frame.Mouse,\
+                                \r\n        sizeof(usbd.Intf${InterfaceNum}.InEndpoint.Frame.Mouse),\
+                                \r\n        &usbd.Intf${InterfaceNum}.InEndpoint.State,\
+                                \r\n        Timeout_Ms);\
+                                \r\n}\
+                                \r\n\
+                                \r\nint USBD_Intf${InterfaceNum}_Mouse_Write_IT(void)\
+                                \r\n{\
+                                \r\n    return USBD_InEp_Write_IT(\
                                 \r\n        USBD_BUSID,\
                                 \r\n        usbd.Intf${InterfaceNum}.InEndpoint.Address,\
                                 \r\n        (uint8_t *)&usbd.Intf${InterfaceNum}.InEndpoint.Frame.Mouse,\
@@ -2686,7 +2803,10 @@ function generateCode() {
                                 \r\n        &usbd.Intf${InterfaceNum}.InEndpoint.State);\
                                 \r\n}\
                                 \r\n`;
-                                functionDefString += `\r\nint USBD_Intf${InterfaceNum}_Mouse_Write_Input(void);`;
+                                functionDefString += `\
+                                \r\nint USBD_Intf${InterfaceNum}_Mouse_Write_Timeout(size_t Timeout_Ms);\
+                                \r\nint USBD_Intf${InterfaceNum}_Mouse_Write_IT(void);\
+                                `;
                             }
 
                             //Keyboard
@@ -2723,9 +2843,20 @@ function generateCode() {
                                 \r\n`;
 
                                 USBD_Intf_Write_Function_String += `\
-                                \r\nint USBD_Intf${InterfaceNum}_Keyboard_Write_Input(void)\
+                                \r\nint USBD_Intf${InterfaceNum}_Keyboard_Write_Input_Timeout(size_t Timeout_Ms)\
                                 \r\n{\
-                                \r\n    return USBD_InEp_Write(\
+                                \r\n    return USBD_InEp_Write_Timeout(\
+                                \r\n        USBD_BUSID,\
+                                \r\n        usbd.Intf${InterfaceNum}.InEndpoint.Address,\
+                                \r\n        (uint8_t *)&usbd.Intf${InterfaceNum}.InEndpoint.Frame.Keyboard,\
+                                \r\n        sizeof(usbd.Intf${InterfaceNum}.InEndpoint.Frame.Keyboard),\
+                                \r\n        &usbd.Intf${InterfaceNum}.InEndpoint.State,\
+                                \r\n        Timeout_Ms);\
+                                \r\n}\
+                                \r\n\
+                                \r\nint USBD_Intf${InterfaceNum}_Keyboard_Write_Input_IT(void)\
+                                \r\n{\
+                                \r\n    return USBD_InEp_Write_IT(\
                                 \r\n        USBD_BUSID,\
                                 \r\n        usbd.Intf${InterfaceNum}.InEndpoint.Address,\
                                 \r\n        (uint8_t *)&usbd.Intf${InterfaceNum}.InEndpoint.Frame.Keyboard,\
@@ -2733,7 +2864,10 @@ function generateCode() {
                                 \r\n        &usbd.Intf${InterfaceNum}.InEndpoint.State);\
                                 \r\n}\
                                 \r\n`;
-                                functionDefString += `\r\nint USBD_Intf${InterfaceNum}_Keyboard_Write_Input(void);`;
+                                functionDefString += `
+                                \r\nint USBD_Intf${InterfaceNum}_Keyboard_Write_Input_Timeout(size_t Timeout_Ms);\
+                                \r\nint USBD_Intf${InterfaceNum}_Keyboard_Write_Input_IT(void);\
+                                `;
                             }
 
                             //Consumer
@@ -2752,9 +2886,19 @@ function generateCode() {
                                 \r\n`;
 
                                 USBD_Intf_Write_Function_String += `\
-                                \r\nint USBD_Intf${InterfaceNum}_Consumer_Write_Input(void)\
+                                \r\nint USBD_Intf${InterfaceNum}_Consumer_Write_Input_Timeout(size_t Timeout_Ms)\
                                 \r\n{\
-                                \r\n    return USBD_InEp_Write(\
+                                \r\n    return USBD_InEp_Write_Timeout(\
+                                \r\n        USBD_BUSID,\
+                                \r\n        usbd.Intf${InterfaceNum}.InEndpoint.Address,\
+                                \r\n        (uint8_t *)&usbd.Intf${InterfaceNum}.InEndpoint.Frame.Consumer,\
+                                \r\n        sizeof(usbd.Intf${InterfaceNum}.InEndpoint.Frame.Consumer),\
+                                \r\n        &usbd.Intf${InterfaceNum}.InEndpoint.State,\
+                                \r\n        Timeout_Ms);\
+                                \r\n}\
+                                \r\nint USBD_Intf${InterfaceNum}_Consumer_Write_Input_IT(void)\
+                                \r\n{\
+                                \r\n    return USBD_InEp_Write_IT(\
                                 \r\n        USBD_BUSID,\
                                 \r\n        usbd.Intf${InterfaceNum}.InEndpoint.Address,\
                                 \r\n        (uint8_t *)&usbd.Intf${InterfaceNum}.InEndpoint.Frame.Consumer,\
@@ -2762,7 +2906,10 @@ function generateCode() {
                                 \r\n        &usbd.Intf${InterfaceNum}.InEndpoint.State);\
                                 \r\n}\
                                 \r\n`;
-                                functionDefString += `\r\nint USBD_Intf${InterfaceNum}_Consumer_Write_Input(void);`;
+                                functionDefString += `
+                                \r\nint USBD_Intf${InterfaceNum}_Consumer_Write_Input_Timeout(size_t Timeout_Ms);\
+                                \r\nint USBD_Intf${InterfaceNum}_Consumer_Write_Input_IT(void);\
+                                `;
                             }
 
                             haveReportId = VendorDefineReportId | MouseReportId | KeyboardReportId | ConsumerReportId;
@@ -2816,7 +2963,7 @@ function generateCode() {
                             USBD_Ep_Init_String += `\
                             \r\nstatic struct usbd_endpoint Intf${InterfaceNum}OutEp0 = {\
                             \r\n.ep_addr = 0x${toHexFormat(interfaceInfo[i]["Endpoint"]["Out"]["Addr"])},\
-                            \r\n.ep_cb = USBD_Intf${InterfaceNum}_OutEp0_Callback,\
+                            \r\n.ep_cb = USBD_Intf${InterfaceNum}_OutEp0_Handler,\
                             \r\n};\
                             `;
 
@@ -2825,7 +2972,10 @@ function generateCode() {
                             `;
 
                             USBD_Ep_Callback_String += `\
-                            \r\nstatic void USBD_Intf${InterfaceNum}_OutEp0_Callback(uint8_t busid, uint8_t ep, uint32_t nbytes)\
+                            \r\n__weak void USBD_Intf${InterfaceNum}_OutEp0_CpltCallback(uint8_t busid, uint8_t ep, uint32_t nbytes)\
+                            \r\n{\
+                            \r\n}\
+                            \r\nstatic void USBD_Intf${InterfaceNum}_OutEp0_Handler(uint8_t busid, uint8_t ep, uint32_t nbytes)\
                             \r\n{\
                             \r\nusbd.Intf${InterfaceNum}.OutEndpoint.State = 1;\               
                             \r\nusbd_ep_start_read(\
@@ -2833,7 +2983,12 @@ function generateCode() {
                             \r\n\tusbd.Intf${InterfaceNum}.OutEndpoint.Address,\
                             \r\n\tusbd.Intf${InterfaceNum}.OutEndpoint.Frame.Buffer,\
                             \r\n\tsizeof(usbd.Intf${InterfaceNum}.OutEndpoint.Frame.Buffer));\
+                            \r\n\tUSBD_Intf${InterfaceNum}_OutEp0_CpltCallback(busid, ep, nbytes);\
                             \r\n}\
+                            `;
+
+                            callbackfunctionDefString += `\
+                            \r\nvoid USBD_Intf${InterfaceNum}_OutEp0_CpltCallback(uint8_t busid, uint8_t ep, uint32_t nbytes);\
                             `;
 
                             if (interfaceInfo[i]["VendorDefine"]["Enabled"]) {
@@ -2956,7 +3111,7 @@ function generateCode() {
                         USBD_Ep_Init_String += `\
                             \r\nstatic struct usbd_endpoint Intf${InterfaceNum}IntEp0 = {\
                             \r\n.ep_addr = 0x${toHexFormat(interfaceInfo[i]["IntEpAddr"])},\
-                            \r\n.ep_cb = USBD_Intf${InterfaceNum}_IntEp0_Callback,\
+                            \r\n.ep_cb = USBD_Intf${InterfaceNum}_IntEp0_Handler,\
                             \r\n};\
                             `;
 
@@ -2972,16 +3127,35 @@ function generateCode() {
                             `;
 
                         USBD_Ep_Callback_String += `\
-                            \r\nstatic void USBD_Intf${InterfaceNum}_IntEp0_Callback(uint8_t busid, uint8_t ep, uint32_t nbytes)\
+                            \r\n__weak void USBD_Intf${InterfaceNum}_IntEp0_CpltCallback(uint8_t busid, uint8_t ep, uint32_t nbytes)\
+                            \r\n{\
+                            \r\n}\
+                            \r\nstatic void USBD_Intf${InterfaceNum}_IntEp0_Handler(uint8_t busid, uint8_t ep, uint32_t nbytes)\
                             \r\n{\
                             \r\nusbd.Intf${InterfaceNum}.IntEndpoint.State = USBD_STATE_IDLE;\
+                            \r\nUSBD_Intf${InterfaceNum}_IntEp0_CpltCallback(busid, ep, nbytes);\
                             \r\n}\
                             `;
 
+                        callbackfunctionDefString += `\
+                            \r\nvoid USBD_Intf${InterfaceNum}_IntEp0_CpltCallback(uint8_t busid, uint8_t ep, uint32_t nbytes);\
+                        `;
+
                         USBD_Intf_Write_Function_String += `\
-                        \r\nint USBD_Intf${InterfaceNum}_CDC_ACM_Int_Write_Input(void)\
+                        \r\nint USBD_Intf${InterfaceNum}_CDC_ACM_Int_Write_Input_Timeout(size_t Timeout_Ms)\
                         \r\n{\
-                        \r\n    return USBD_InEp_Write(\
+                        \r\n    return USBD_InEp_Write_Timeout(\
+                        \r\n        USBD_BUSID,\
+                        \r\n        usbd.Intf${InterfaceNum}.IntEndpoint.Address,\
+                        \r\n        (uint8_t *)&usbd.Intf${InterfaceNum}.IntEndpoint.State,\
+                        \r\n        sizeof(usbd.Intf${InterfaceNum}.IntEndpoint.State),\
+                        \r\n        &usbd.Intf${InterfaceNum}.IntEndpoint.State,\
+                        \r\n        Timeout_Ms);\
+                        \r\n}\
+                        \r\n\
+                        \r\nint USBD_Intf${InterfaceNum}_CDC_ACM_Int_Write_Input_IT(void)\
+                        \r\n{\
+                        \r\n    return USBD_InEp_Write_IT(\
                         \r\n        USBD_BUSID,\
                         \r\n        usbd.Intf${InterfaceNum}.IntEndpoint.Address,\
                         \r\n        (uint8_t *)&usbd.Intf${InterfaceNum}.IntEndpoint.State,\
@@ -2989,7 +3163,10 @@ function generateCode() {
                         \r\n        &usbd.Intf${InterfaceNum}.IntEndpoint.State);\
                         \r\n}\
                         \r\n`;
-                        functionDefString += `\r\nint USBD_Intf${InterfaceNum}_CDC_ACM_Int_Write_Input(void);`;
+                        functionDefString += `
+                        \r\nint USBD_Intf${InterfaceNum}_CDC_ACM_Int_Write_Input_Timeout(size_t Timeout_Ms);\
+                        \r\nint USBD_Intf${InterfaceNum}_CDC_ACM_Int_Write_Input_IT(void);\
+                        `;
 
                         inputTypeDefString = `\
                         \r\nstruct\
@@ -3014,7 +3191,7 @@ function generateCode() {
                         USBD_Ep_Init_String += `\
                             \r\nstatic struct usbd_endpoint Intf${InterfaceNum + 1}InEp0 = {\
                             \r\n.ep_addr = 0x${toHexFormat(interfaceInfo[i]["InEpAddr"])},\
-                            \r\n.ep_cb = USBD_Intf${InterfaceNum + 1}_InEp0_Callback,\
+                            \r\n.ep_cb = USBD_Intf${InterfaceNum + 1}_InEp0_Handler,\
                             \r\n};\
                             `;
 
@@ -3031,27 +3208,50 @@ function generateCode() {
                             `;
 
                         USBD_Ep_Callback_String += `\
-                            \r\nstatic void USBD_Intf${InterfaceNum + 1}_InEp0_Callback(uint8_t busid, uint8_t ep, uint32_t nbytes)\
+                            \r\n__weak void USBD_Intf${InterfaceNum}_InEp0_CpltCallback(uint8_t busid, uint8_t ep, uint32_t nbytes)\
+                            \r\n{\
+                            \r\n}\
+                            \r\nstatic void USBD_Intf${InterfaceNum + 1}_InEp0_Handler(uint8_t busid, uint8_t ep, uint32_t nbytes)\
                             \r\n{\
                             \r\n    if (((nbytes & (${interfaceInfo[i]["MaxMps"]} - 1)) == 0) && nbytes) {\
                             \r\n        /* send zlp */\
                             \r\n        usbd_ep_start_write(busid, ep, NULL, 0);\
                             \r\n    } else {\
                             \r\n        usbd.Intf${InterfaceNum + 1}.InEndpoint.State = USBD_STATE_IDLE;\
+                            \r\n        USBD_Intf${InterfaceNum}_InEp0_CpltCallback(busid, ep, nbytes);\
                             \r\n    }\
                             \r\n}\
                             `;
+                        callbackfunctionDefString += `\
+                            \r\nvoid USBD_Intf${InterfaceNum}_InEp0_CpltCallback(uint8_t busid, uint8_t ep, uint32_t nbytes);\
+                        `;
 
                         if (interfaceInfo[i]["TxLength"] == 0) {
                             USBD_Intf_Write_Function_String += `\
-                                \r\nint USBD_Intf${InterfaceNum + 1}_CDC_ACM_Write_Input(uint8_t *buffer, size_t Length)\
+                                \r\nint USBD_Intf${InterfaceNum + 1}_CDC_ACM_Write_Input_Timeout(uint8_t *buffer, size_t Length, size_t Timeout_Ms)\
                                 \r\n{\
                                 \r\n    if(buffer == NULL) {\
                                 \r\n        return 0;\
                                 \r\n    }\
                                 \r\n\
                                 \r\n\
-                                \r\n    return USBD_InEp_Write(\
+                                \r\n    return USBD_InEp_Write_Timeout(\
+                                \r\n        USBD_BUSID,\
+                                \r\n        usbd.Intf${InterfaceNum + 1}.InEndpoint.Address,\
+                                \r\n        buffer,\
+                                \r\n        Length,\
+                                \r\n        &usbd.Intf${InterfaceNum + 1}.InEndpoint.State,\
+                                \r\n        Timeout_Ms);\
+                                \r\n}\
+                                \r\n\
+                                \r\nint USBD_Intf${InterfaceNum + 1}_CDC_ACM_Write_Input_IT(uint8_t *buffer, size_t Length)\
+                                \r\n{\
+                                \r\n    if(buffer == NULL) {\
+                                \r\n        return 0;\
+                                \r\n    }\
+                                \r\n\
+                                \r\n\
+                                \r\n    return USBD_InEp_Write_Timeout(\
                                 \r\n        USBD_BUSID,\
                                 \r\n        usbd.Intf${InterfaceNum + 1}.InEndpoint.Address,\
                                 \r\n        buffer,\
@@ -3059,17 +3259,35 @@ function generateCode() {
                                 \r\n        &usbd.Intf${InterfaceNum + 1}.InEndpoint.State);\
                                 \r\n}\
                                 \r\n`;
-                            functionDefString += `\r\nint USBD_Intf${InterfaceNum + 1}_CDC_ACM_Write_Input(uint8_t *buffer, size_t Length);`;
+                            functionDefString += `
+                            \r\nint USBD_Intf${InterfaceNum + 1}_CDC_ACM_Write_Input_Timeout(uint8_t *buffer, size_t Length, size_t Timeout_Ms);\
+                            \r\nint USBD_Intf${InterfaceNum + 1}_CDC_ACM_Write_Input_IT(uint8_t *buffer, size_t Length);\
+                            `;
 
                         } else {
                             USBD_Intf_Write_Function_String += `\
-                                \r\nint USBD_Intf${InterfaceNum + 1}_CDC_ACM_Write_Input(size_t Length)\
+                                \r\nint USBD_Intf${InterfaceNum + 1}_CDC_ACM_Write_Input_Timeout(size_t Length, size_t Timeout_Ms)\
                                 \r\n{\
                                 \r\n    Length = Length > sizeof(usbd.Intf${InterfaceNum + 1}.InEndpoint.Buffer)\
                                 \r\n        ? sizeof(usbd.Intf${InterfaceNum + 1}.InEndpoint.Buffer) \
                                 \r\n        : Length;\
                                 \r\n\
-                                \r\n    return USBD_InEp_Write(\
+                                \r\n    return USBD_InEp_Write_Timeout(\
+                                \r\n        USBD_BUSID,\
+                                \r\n        usbd.Intf${InterfaceNum + 1}.InEndpoint.Address,\
+                                \r\n        usbd.Intf${InterfaceNum + 1}.InEndpoint.Buffer,\
+                                \r\n        Length,\
+                                \r\n        &usbd.Intf${InterfaceNum + 1}.InEndpoint.State,\
+                                \r\n        Timeout_Ms);\
+                                \r\n}\
+                                \r\n\
+                                \r\nint USBD_Intf${InterfaceNum + 1}_CDC_ACM_Write_Input_IT(size_t Length)\
+                                \r\n{\
+                                \r\n    Length = Length > sizeof(usbd.Intf${InterfaceNum + 1}.InEndpoint.Buffer)\
+                                \r\n        ? sizeof(usbd.Intf${InterfaceNum + 1}.InEndpoint.Buffer) \
+                                \r\n        : Length;\
+                                \r\n\
+                                \r\n    return USBD_InEp_Write_IT(\
                                 \r\n        USBD_BUSID,\
                                 \r\n        usbd.Intf${InterfaceNum + 1}.InEndpoint.Address,\
                                 \r\n        usbd.Intf${InterfaceNum + 1}.InEndpoint.Buffer,\
@@ -3077,7 +3295,10 @@ function generateCode() {
                                 \r\n        &usbd.Intf${InterfaceNum + 1}.InEndpoint.State);\
                                 \r\n}\
                                 \r\n`;
-                            functionDefString += `\r\nint USBD_Intf${InterfaceNum + 1}_CDC_ACM_Write_Input(size_t Length);`;
+                            functionDefString += `
+                            \r\nint USBD_Intf${InterfaceNum + 1}_CDC_ACM_Write_Input_Timeout(size_t Length, size_t Timeout_Ms);\
+                            \r\nint USBD_Intf${InterfaceNum + 1}_CDC_ACM_Write_Input_IT(size_t Length);\
+                            `;
                         }
 
                         outputTypeDefString = `\
@@ -3097,7 +3318,7 @@ function generateCode() {
                         USBD_Ep_Init_String += `\
                             \r\nstatic struct usbd_endpoint Intf${InterfaceNum + 1}OutEp0 = {\
                             \r\n.ep_addr = 0x${toHexFormat(interfaceInfo[i]["OutEpAddr"])},\
-                            \r\n.ep_cb = USBD_Intf${InterfaceNum + 1}_OutEp0_Callback,\
+                            \r\n.ep_cb = USBD_Intf${InterfaceNum + 1}_OutEp0_Handler,\
                             \r\n};\
                             `;
                         USBD_Init_String += `\
@@ -3105,7 +3326,10 @@ function generateCode() {
                             `;
 
                         USBD_Ep_Callback_String += `\
-                            \r\nstatic void USBD_Intf${InterfaceNum + 1}_OutEp0_Callback(uint8_t busid, uint8_t ep, uint32_t nbytes)\
+                            \r\n__weak void USBD_Intf${InterfaceNum}_OutEp0_CpltCallback(uint8_t busid, uint8_t ep, uint32_t nbytes)\
+                            \r\n{\
+                            \r\n}\
+                            \r\nstatic void USBD_Intf${InterfaceNum + 1}_OutEp0_Handler(uint8_t busid, uint8_t ep, uint32_t nbytes)\
                             \r\n{\
                             \r\nusbd.Intf${InterfaceNum + 1}.OutEndpoint.State = 1;\
                             \r\nusbd.Intf${InterfaceNum + 1}.OutEndpoint.RxLength = nbytes;\
@@ -3114,8 +3338,13 @@ function generateCode() {
                             \r\n\tusbd.Intf${InterfaceNum + 1}.OutEndpoint.Address,\
                             \r\n\tusbd.Intf${InterfaceNum + 1}.OutEndpoint.Buffer,\
                             \r\n\tsizeof(usbd.Intf${InterfaceNum + 1}.OutEndpoint.Buffer));\
+                            \r\n\tUSBD_Intf${InterfaceNum}_OutEp0_CpltCallback(busid, ep, nbytes);\
                             \r\n}\
                             `;
+
+                        callbackfunctionDefString += `\
+                            \r\nvoid USBD_Intf${InterfaceNum}_OutEp0_CpltCallback(uint8_t busid, uint8_t ep, uint32_t nbytes);\
+                        `;
 
                         USBD_Event_Handler_String += `\
                             \r\nusbd_ep_start_read(\
@@ -3220,7 +3449,7 @@ function generateCode() {
                             USBD_Ep_Init_String += `\
                             \r\nstatic struct usbd_endpoint Intf${InterfaceNum}InEp0 = {\
                             \r\n.ep_addr = 0x${toHexFormat(interfaceInfo[i]["InEpAddr"])},\
-                            \r\n.ep_cb = USBD_Intf${InterfaceNum}_InEp0_Callback,\
+                            \r\n.ep_cb = USBD_Intf${InterfaceNum}_InEp0_Handler,\
                             \r\n};\
                             `;
 
@@ -3229,27 +3458,51 @@ function generateCode() {
                             `;
 
                             USBD_Ep_Callback_String += `\
-                            \r\nstatic void USBD_Intf${InterfaceNum}_InEp0_Callback(uint8_t busid, uint8_t ep, uint32_t nbytes)\
+                            \r\n__weak void USBD_Intf${InterfaceNum}_InEp0_CpltCallback(uint8_t busid, uint8_t ep, uint32_t nbytes)\
+                            \r\n{\
+                            \r\n}\
+                            \r\nstatic void USBD_Intf${InterfaceNum}_InEp0_Handler(uint8_t busid, uint8_t ep, uint32_t nbytes)\
                             \r\n{\
                             \r\n    if ((nbytes & (64 - 1)) == 0 && nbytes) {\
                             \r\n        /* send zlp */\
                             \r\n        usbd_ep_start_write(busid, ep, NULL, 0);\
                             \r\n    } else {\
                             \r\n        usbd.Intf${InterfaceNum}.InEndpoint.State = USBD_STATE_IDLE;\
+                            \r\n        USBD_Intf${InterfaceNum}_InEp0_CpltCallback(busid, ep, nbytes);\
                             \r\n    }\
                             \r\n}\
                             `;
 
+                            callbackfunctionDefString += `\
+                            \r\nvoid USBD_Intf${InterfaceNum}_InEp0_CpltCallback(uint8_t busid, uint8_t ep, uint32_t nbytes);\
+                            `;
+
                             if (interfaceInfo[i]["TxLength"] == 0) {
                                 USBD_Intf_Write_Function_String += `\
-                                \r\nint USBD_Intf${InterfaceNum}_WinUSB_Write_Input(uint8_t *buffer, size_t Length)\
+                                \r\nint USBD_Intf${InterfaceNum}_WinUSB_Write_Input_Timeout(uint8_t *buffer, size_t Length, size_t Timeout_Ms)\
                                 \r\n{\
                                 \r\n    if(buffer == NULL) {\
                                 \r\n        return 0;\
                                 \r\n    }\
                                 \r\n\
                                 \r\n\
-                                \r\n    return USBD_InEp_Write(\
+                                \r\n    return USBD_InEp_Write_Timeout(\
+                                \r\n        USBD_BUSID,\
+                                \r\n        usbd.Intf${InterfaceNum}.InEndpoint.Address,\
+                                \r\n        buffer,\
+                                \r\n        Length,\
+                                \r\n        &usbd.Intf${InterfaceNum}.InEndpoint.State,\
+                                \r\n        Timeout_Ms);\
+                                \r\n}\
+                                \r\n\
+                                \r\nint USBD_Intf${InterfaceNum}_WinUSB_Write_Input_IT(uint8_t *buffer, size_t Length)\
+                                \r\n{\
+                                \r\n    if(buffer == NULL) {\
+                                \r\n        return 0;\
+                                \r\n    }\
+                                \r\n\
+                                \r\n\
+                                \r\n    return USBD_InEp_Write_IT(\
                                 \r\n        USBD_BUSID,\
                                 \r\n        usbd.Intf${InterfaceNum}.InEndpoint.Address,\
                                 \r\n        buffer,\
@@ -3257,17 +3510,34 @@ function generateCode() {
                                 \r\n        &usbd.Intf${InterfaceNum}.InEndpoint.State);\
                                 \r\n}\
                                 \r\n`;
-                                functionDefString += `\r\nint USBD_Intf${InterfaceNum}_WinUSB_Write_Input(uint8_t *buffer, size_t Length);`;
+                                functionDefString += `
+                                \r\nint USBD_Intf${InterfaceNum}_WinUSB_Write_Input_Timeout(uint8_t *buffer, size_t Length, size_t Timeout_Ms);\
+                                \r\nint USBD_Intf${InterfaceNum}_WinUSB_Write_Input_IT(uint8_t *buffer, size_t Length);\
+                                `;
 
                             } else {
                                 USBD_Intf_Write_Function_String += `\
-                                \r\nint USBD_Intf${InterfaceNum}_WinUSB_Write_Input(size_t Length)\
+                                \r\nint USBD_Intf${InterfaceNum}_WinUSB_Write_Input_Timeout(size_t Length, size_t Timeout_Ms)\
                                 \r\n{\
                                 \r\n    Length = Length > sizeof(usbd.Intf${InterfaceNum}.InEndpoint.Buffer)\
                                 \r\n        ? sizeof(usbd.Intf${InterfaceNum}.InEndpoint.Buffer) \
                                 \r\n        : Length;\
                                 \r\n\
-                                \r\n    return USBD_InEp_Write(\
+                                \r\n    return USBD_InEp_Write_Timeout(\
+                                \r\n        USBD_BUSID,\
+                                \r\n        usbd.Intf${InterfaceNum}.InEndpoint.Address,\
+                                \r\n        usbd.Intf${InterfaceNum}.InEndpoint.Buffer,\
+                                \r\n        Length,\
+                                \r\n        &usbd.Intf${InterfaceNum}.InEndpoint.State,\
+                                \r\n        Timeout_Ms);\
+                                \r\n}\
+                                \r\nint USBD_Intf${InterfaceNum}_WinUSB_Write_Input_IT(size_t Length)\
+                                \r\n{\
+                                \r\n    Length = Length > sizeof(usbd.Intf${InterfaceNum}.InEndpoint.Buffer)\
+                                \r\n        ? sizeof(usbd.Intf${InterfaceNum}.InEndpoint.Buffer) \
+                                \r\n        : Length;\
+                                \r\n\
+                                \r\n    return USBD_InEp_Write_IT(\
                                 \r\n        USBD_BUSID,\
                                 \r\n        usbd.Intf${InterfaceNum}.InEndpoint.Address,\
                                 \r\n        usbd.Intf${InterfaceNum}.InEndpoint.Buffer,\
@@ -3275,7 +3545,10 @@ function generateCode() {
                                 \r\n        &usbd.Intf${InterfaceNum}.InEndpoint.State);\
                                 \r\n}\
                                 \r\n`;
-                                functionDefString += `\r\nint USBD_Intf${InterfaceNum}_WinUSB_Write_Input(size_t Length);`;
+                                functionDefString += `
+                                \r\nint USBD_Intf${InterfaceNum}_WinUSB_Write_Input_Timeout(size_t Length, size_t Timeout_Ms);\
+                                \r\nint USBD_Intf${InterfaceNum}_WinUSB_Write_Input_IT(size_t Length);\
+                                `;
                             }
 
                         }
@@ -3298,7 +3571,7 @@ function generateCode() {
                             USBD_Ep_Init_String += `\
                             \r\nstatic struct usbd_endpoint Intf${InterfaceNum}OutEp0 = {\
                             \r\n.ep_addr = 0x${toHexFormat(interfaceInfo[i]["OutEpAddr"])},\
-                            \r\n.ep_cb = USBD_Intf${InterfaceNum}_OutEp0_Callback,\
+                            \r\n.ep_cb = USBD_Intf${InterfaceNum}_OutEp0_Hanlder,\
                             \r\n};\
                             `;
 
@@ -3315,7 +3588,10 @@ function generateCode() {
                             `;
 
                             USBD_Ep_Callback_String += `\
-                            \r\nstatic void USBD_Intf${InterfaceNum}_OutEp0_Callback(uint8_t busid, uint8_t ep, uint32_t nbytes)\
+                            \r\n__weak void USBD_Intf${InterfaceNum}_OutEp0_CpltCallback(uint8_t busid, uint8_t ep, uint32_t nbytes)\
+                            \r\n{\
+                            \r\n}\
+                            \r\nstatic void USBD_Intf${InterfaceNum}_OutEp0_Hanlder(uint8_t busid, uint8_t ep, uint32_t nbytes)\
                             \r\n{\
                             \r\nusbd.Intf${InterfaceNum}.OutEndpoint.State = 1;\
                             \r\nusbd.Intf${InterfaceNum}.OutEndpoint.RxLength = nbytes;\
@@ -3324,7 +3600,12 @@ function generateCode() {
                             \r\n\tusbd.Intf${InterfaceNum}.OutEndpoint.Address,\
                             \r\n\tusbd.Intf${InterfaceNum}.OutEndpoint.Buffer,\
                             \r\n\tsizeof(usbd.Intf${InterfaceNum}.OutEndpoint.Buffer));\
+                            \r\n\tUSBD_Intf${InterfaceNum}_OutEp0_CpltCallback(busid, ep, nbytes);\
                             \r\n}\
+                            `;
+
+                            callbackfunctionDefString += `\
+                            \r\nvoid USBD_Intf${InterfaceNum}_OutEp0_CpltCallback(uint8_t busid, uint8_t ep, uint32_t nbytes);\
                             `;
                         }
 
@@ -3382,6 +3663,11 @@ function generateCode() {
     \r\ntypedef struct {\
     ${typedefString}\
     ${haveKeyboard ? "\r\nuint8_t KeyBoardLedState;" : ""}\
+    \r\nstruct\
+    \r\n{\
+    \r\n    uint32_t Tick_Per_Ms;\
+    \r\n    uint32_t (*Get_SysTick)(void);\
+    \r\n} Timeout;\
     \r\n} USBD_TypeDef;\
     `;
 
@@ -3405,10 +3691,21 @@ function generateCode() {
     \r\n#define USBD_STATE_BUSY 1u\
     \r\n#define USBD_BUSID 0u\
     \r\n\
-    ${typedefString}\
-    \r\n\
-    \r\nint USBD_InEp_Write(uint8_t Usb_BusId, uint8_t InEp, uint8_t *data, size_t Length, __IO uint8_t *state);\
-    \r\n\ 
+    ${typedefString}
+
+int USBD_InEp_Write_Timeout(uint8_t Usb_BusId, uint8_t InEp, const uint8_t *data, size_t Length, __IO uint8_t *state, size_t Timeout_Ms);
+int USBD_InEp_Write_IT(uint8_t Usb_BusId, uint8_t InEp, const uint8_t *data, size_t Length, __IO uint8_t *state);
+
+void USBD_Event_Reset_Callback(uint8_t busid);
+void USBD_Event_Connected_Callback(uint8_t busid);
+void USBD_Event_Disconnected_Callback(uint8_t busid);
+void USBD_Event_Resume_Callback(uint8_t busid);
+void USBD_Event_Suspend_Callback(uint8_t busid);
+void USBD_Event_Configured_Callback(uint8_t busid);
+void USBD_Event_Set_Remote_Wakeup_Callback(uint8_t busid);
+void USBD_Event_Clr_Remote_Wakeup_Callback(uint8_t busid);
+\r\n${callbackfunctionDefString}\
+\r\n\
     \r\nvoid USBD_Init(void);\
     ${functionDefString}\
     \r\n\ 
@@ -3426,6 +3723,28 @@ function generateCode() {
     \r\nvoid USBD_Init(void)\
     \r\n{\
     \r\n\
+    \r\n#ifdef HAL_MODULE_ENABLED\
+    \r\n    /* --- STM32 HAL Environment --- */\
+    \r\n    // Assign the HAL tick provider function\
+    \r\n    usbd.Timeout.Get_SysTick = &HAL_GetTick;\
+    \r\n\
+    \r\n    // Calculate ticks per millisecond.\
+    \r\n    // HAL_GetTickFreq() returns Hz (e.g., 1000 for 1ms per tick).\
+    \r\n    usbd.Timeout.Tick_Per_Ms = HAL_GetTickFreq() / 1000;\
+    \r\n\
+    \r\n    // Safety check: ensure at least 1 tick per ms to avoid division by zero or logic errors\
+    \r\n    if (usbd.Timeout.Tick_Per_Ms == 0) {\
+    \r\n        usbd.Timeout.Tick_Per_Ms = 1;\
+    \r\n    }\
+    \r\n#else\
+    \r\n    /* --- Non-STM32 or Bare-metal Environment --- */\
+    \r\n    // TODO: User must provide a function that returns current system time/ticks.\
+    \r\n    usbd.Timeout.Get_SysTick = NULL;\
+    \r\n\
+    \r\n    // TODO: User must define how many ticks increment in 1 millisecond.\
+    \r\n    usbd.Timeout.Tick_Per_Ms = 0;\
+    \r\n#endif\
+    \r\n\
     ${USBD_TypeDef_InitInFunc_String}\
     \r\n\
     ${USBD_Init_String}\
@@ -3434,31 +3753,41 @@ function generateCode() {
     `;
 
     USBD_Event_Handler_String = `\
-    \r\nstatic void USBD_Event_Handler(uint8_t busid, uint8_t event)\
-    \r\n{\
-    \r\n    switch (event) {\
-    \r\n        case USBD_EVENT_RESET:\
-    \r\n            break;\
-    \r\n        case USBD_EVENT_CONNECTED:\
-    \r\n            break;\
-    \r\n        case USBD_EVENT_DISCONNECTED:\
-    \r\n            break;\
-    \r\n        case USBD_EVENT_RESUME:\
-    \r\n            break;\
-    \r\n        case USBD_EVENT_SUSPEND:\
-    \r\n            break;\
-    \r\n        case USBD_EVENT_CONFIGURED:\
-    ${USBD_Event_Handler_String}\
-    \r\n            break;\
-    \r\n        case USBD_EVENT_SET_REMOTE_WAKEUP:\
-    \r\n            break;\
-    \r\n        case USBD_EVENT_CLR_REMOTE_WAKEUP:\
-    \r\n            break;\
-    \r\n\
-    \r\n        default:\
-    \r\n            break;\
-    \r\n    }\
-    \r\n}\
+#pragma region USBD_Event_Handler
+static void USBD_Event_Handler(uint8_t busid, uint8_t event)
+{
+    switch (event) {
+        case USBD_EVENT_RESET:
+            USBD_Event_Reset_Callback(busid);
+            break;
+        case USBD_EVENT_CONNECTED:
+            USBD_Event_Connected_Callback(busid);
+            break;
+        case USBD_EVENT_DISCONNECTED:
+            USBD_Event_Disconnected_Callback(busid);
+            break;
+        case USBD_EVENT_RESUME:
+            USBD_Event_Resume_Callback(busid);
+            break;
+        case USBD_EVENT_SUSPEND:
+            USBD_Event_Suspend_Callback(busid);
+            break;
+        case USBD_EVENT_CONFIGURED:
+        ${USBD_Event_Handler_String}
+            USBD_Event_Configured_Callback(busid);
+            break;
+        case USBD_EVENT_SET_REMOTE_WAKEUP:
+            USBD_Event_Set_Remote_Wakeup_Callback(busid);
+            break;
+        case USBD_EVENT_CLR_REMOTE_WAKEUP:
+            USBD_Event_Clr_Remote_Wakeup_Callback(busid);
+            break;
+
+        default:
+            break;
+    }
+}
+#pragma endregion USBD_Event_Handler
     `;
 
     let USBD_Hid_Set_Report_String = `\
