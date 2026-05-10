@@ -3,6 +3,7 @@
 仅支持HID的vendor define、mouse、keyboard、consumer，CDC-ACM，WinUSB。<br>
 使用1.4.3版本CherryUSB。<br>
 void usb_dc_low_level_init(void)和USB中断回调函数目前只有STM32F0、STM32L0、STM32G4、STM32F1、CH32F10x适配了生成，其他请自行解决。<br>
+在非STM32的HAL库的环境中，在USBD_Init()中自行实现usbd.Timeout.Get_SysTick函数调用和usbd.Timeout.Tick_Per_Ms实际值，以供Timeout类型的写入函数调用。
 
 # USB接口组合对照表
 | 组合名称 | 接口1 | 接口2 | 备注 |
