@@ -69,8 +69,24 @@ const USB_CONFIG_H = `\
 `;
 
 const USB_DC_INIT_DEINIT_IRQ = `\
-\r\n#if defined(__CH32F10x_H) && !defined(USB_BASE)
+
+#ifndef __weak
+#if defined(__CC_ARM)
+#define __weak __weak
+#elif defined(__GNUC__)
+#define __weak __attribute__ ((weak))
+#endif
+#endif
+
+#ifndef USB_BASE
+#if defined(__CH32F10x_H)
 #define USB_BASE RegBase
+#elif defined(__CH58x_COMM_H__) || defined(__CH59x_COMM_H__)
+#define USB_BASE USB_BASE_ADDR
+#else
+//You need to define USB_BASE to the correct USB peripheral address.
+//#define USB_BASE
+#endif
 #endif
 
 #pragma region usb_dc_low_level_init
@@ -151,6 +167,11 @@ void usb_dc_low_level_init(void)
     NVIC_Init(&NVIC_InitStructure);
 }
 
+#elif defined(__CH58x_COMM_H__) || defined(__CH59x_COMM_H__)
+void usb_dc_low_level_init (void) {
+    PFIC_EnableIRQ (USB_IRQn);
+}
+
 #else
 // You need to fill the usb_dc_low_level_init function correctly
 void usb_dc_low_level_init(void)
@@ -181,6 +202,16 @@ void usb_dc_low_level_deinit(void)
     NVIC_InitStructure.NVIC_IRQChannelCmd                = DISABLE;
     NVIC_Init(&NVIC_InitStructure);
 
+#elif defined(__CH59x_COMM_H__)
+    USB_Disable();
+    USB_DisablePin();
+    R8_USB_INT_FG = 0xFF;
+    
+#elif defined(__CH58x_COMM_H__)
+    USB_Disable();
+    (R16_PIN_CONFIG &= ~(RB_PIN_USB_EN | RB_UDP_PU_EN));
+    R8_USB_INT_FG = 0xFF;
+    
 #else
 
 #endif
@@ -208,6 +239,8 @@ void USB_LP_CAN1_RX0_IRQHandler(void)
     extern void USBD_IRQHandler(uint8_t busid);
     USBD_IRQHandler(USBD_BUSID);
 }
+
+#elif defined(__CH59x_COMM_H__) || defined(__CH58x_COMM_H__)
 
 #else
 // You need to replace USB_IRQHandler with the correct USB interrupt callback function
