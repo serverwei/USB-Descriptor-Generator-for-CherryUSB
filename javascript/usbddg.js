@@ -3754,30 +3754,45 @@ void USBD_Event_Clr_Remote_Wakeup_Callback(uint8_t busid);
 
     USBD_Init_String = `\
     \r\nvoid USBD_Init(void)\
-    \r\n{\
-    \r\n\
-    \r\n#ifdef HAL_MODULE_ENABLED\
-    \r\n    /* --- STM32 HAL Environment --- */\
-    \r\n    // Assign the HAL tick provider function\
-    \r\n    usbd.Timeout.Get_SysTick = &HAL_GetTick;\
-    \r\n\
-    \r\n    // Calculate ticks per millisecond.\
-    \r\n    // HAL_GetTickFreq() returns Hz (e.g., 1000 for 1ms per tick).\
-    \r\n    usbd.Timeout.Tick_Per_Ms = HAL_GetTickFreq() / 1000;\
-    \r\n\
-    \r\n    // Safety check: ensure at least 1 tick per ms to avoid division by zero or logic errors\
-    \r\n    if (usbd.Timeout.Tick_Per_Ms == 0) {\
-    \r\n        usbd.Timeout.Tick_Per_Ms = 1;\
-    \r\n    }\
-    \r\n#else\
-    \r\n    /* --- Non-STM32 or Bare-metal Environment --- */\
-    \r\n    // TODO: User must provide a function that returns current system time/ticks.\
-    \r\n    usbd.Timeout.Get_SysTick = NULL;\
-    \r\n\
-    \r\n    // TODO: User must define how many ticks increment in 1 millisecond.\
-    \r\n    usbd.Timeout.Tick_Per_Ms = 0;\
-    \r\n#endif\
-    \r\n\
+    \r\n{
+#ifdef HAL_MODULE_ENABLED
+    /* --- STM32 HAL Environment --- */
+    // Assign the HAL tick provider function
+    usbd.Timeout.Get_SysTick = &HAL_GetTick;
+
+    // Calculate ticks per millisecond.
+    // HAL_GetTickFreq() returns Hz (e.g., 1000 for 1ms per tick).
+    usbd.Timeout.Tick_Per_Ms = HAL_GetTickFreq() / 1000;
+
+    // Safety check: ensure at least 1 tick per ms to avoid division by zero or logic errors
+    if (usbd.Timeout.Tick_Per_Ms == 0) {
+        usbd.Timeout.Tick_Per_Ms = 1;
+    }
+
+#elif defined(__CH59x_COMM_H__) || defined(__CH58x_COMM_H__)
+    usbd.Timeout.Get_SysTick = &SYS_GetSysTickCnt;
+
+    // Calculate ticks per millisecond.
+    // HAL_GetTickFreq() returns Hz (e.g., 1000 for 1ms per tick).
+    uint32_t Sys_Clk = GetSysClock();
+    usbd.Timeout.Tick_Per_Ms = ((SysTick->CTLR & SysTick_CTLR_STCLK) ? Sys_Clk : (Sys_Clk >> 3)) / 1000;
+
+    // Safety check: ensure at least 1 tick per ms to avoid division by zero or logic errors
+    if (usbd.Timeout.Tick_Per_Ms == 0) {
+        usbd.Timeout.Tick_Per_Ms = 1;
+    }
+
+    SysTick->CTLR |= SysTick_CTLR_STE;
+
+#else
+    /* --- Non-STM32 or Bare-metal Environment --- */
+    // TODO: User must provide a function that returns current system time/ticks.
+    usbd.Timeout.Get_SysTick = NULL;
+
+    // TODO: User must define how many ticks increment in 1 millisecond.
+    usbd.Timeout.Tick_Per_Ms = 0;
+#endif
+
     ${USBD_TypeDef_InitInFunc_String}\
     \r\n\
     ${USBD_Init_String}\
