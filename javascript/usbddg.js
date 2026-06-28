@@ -1,4 +1,4 @@
-const USB_CONFIG_H = `\
+﻿const USB_CONFIG_H = `\
 \r\n/*
  * Copyright (c) 2022, sakumisu
  *
@@ -3793,6 +3793,27 @@ void USBD_Event_Clr_Remote_Wakeup_Callback(uint8_t busid);
     usbd.Timeout.Tick_Per_Ms = 0;
 #endif
 
+#if defined(STM32F1) && CONFIG_USBDEV_FSDEV_PMA_ACCESS != 2
+#warning "CONFIG_USBDEV_FSDEV_PMA_ACCESS should be 2 for STM32F1 (auto-overridden in usb_config.h)"
+#endif
+
+#if defined(STM32F1)
+    /* Toggle D+ (PA12) low then release to force host re-detection */
+    {
+        GPIO_InitTypeDef GPIO_InitStruct = {0};
+        /* Switch PA12 to push-pull output and drive low */
+        GPIO_InitStruct.Pin   = GPIO_PIN_12;
+        GPIO_InitStruct.Mode  = GPIO_MODE_OUTPUT_PP;
+        GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+        HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+        HAL_GPIO_WritePin(GPIOA, GPIO_PIN_12, GPIO_PIN_RESET);
+        /* Restore PA12 to AF push-pull; external 1.5k pull-up pulls D+ high */
+        GPIO_InitStruct.Mode  = GPIO_MODE_AF_PP;
+        GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+        HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+    }
+#endif
+
     ${USBD_TypeDef_InitInFunc_String}\
     \r\n\
     ${USBD_Init_String}\
@@ -3839,6 +3860,8 @@ static void USBD_Event_Handler(uint8_t busid, uint8_t event)
     `;
 
     let USBD_Hid_Set_Report_String = `\
+__weak void USBD_HID_Set_Report_Callback (uint8_t busid, uint8_t intf, uint8_t report_id, uint8_t report_type, uint8_t *report, uint32_t report_len) {
+}
     \r\nvoid usbd_hid_set_report(uint8_t busid, uint8_t intf, uint8_t report_id, uint8_t report_type, uint8_t *report, uint32_t report_len)\
     \r\n{\
         ${haveKeyboard ? `\
@@ -3865,6 +3888,7 @@ static void USBD_Event_Handler(uint8_t busid, uint8_t event)
                 `;
             })()}\
         ` : ""}\
+    \r\nUSBD_HID_Set_Report_Callback (busid, intf, report_id, report_type, report, report_len);\
     \r\n}\
     `;
 
@@ -3882,6 +3906,7 @@ static void USBD_Event_Handler(uint8_t busid, uint8_t event)
     \r\n\
     ${USBD_Intf_Init_String}\
     \r\n\
+    \r\nvoid USBD_HID_Set_Report_Callback (uint8_t busid, uint8_t intf, uint8_t report_id, uint8_t report_type, uint8_t *report, uint32_t report_len);\
     ${USBD_Ep_Callback_String}\
     \r\n\
     ${USBD_Ep_Init_String}\
