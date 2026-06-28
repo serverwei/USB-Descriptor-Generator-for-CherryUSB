@@ -3794,7 +3794,7 @@ void USBD_Event_Clr_Remote_Wakeup_Callback(uint8_t busid);
 #endif
 
 #if defined(STM32F1) && CONFIG_USBDEV_FSDEV_PMA_ACCESS != 2
-#warning "CONFIG_USBDEV_FSDEV_PMA_ACCESS should be 2 for STM32F1 (auto-overridden in usb_config.h)"
+#warning "CONFIG_USBDEV_FSDEV_PMA_ACCESS should be 2 for STM32F1 (overridden in usb_config.h)"
 #endif
 
 #if defined(STM32F1)
