@@ -1,270 +1,188 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
     <meta charset="utf-8">
-    <title>
-        USB Descriptor for CherryUSB
-    </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>USB Descriptor Generator for CherryUSB</title>
+    <link rel="stylesheet" href="css/usbddg.css">
+    <script type="module" src="javascript/usbddg.js?v=13"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/c.min.js"></script>
 </head>
-<link ref="stylesheet" href="css/usbddg.css">
-<script type="text/javascript" src="javascript/usbddg.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 
-<body style="display: flex; flex-direction: column;">
-    <div style="display: flex; flex-direction: column;">
-        <div style="display: flex; flex-direction: row;">
-            <div style="display: flex; flex-direction: column;">
-                <div>Device</div>
-                <table id="deviceInfoTable">
+<body>
+    <div class="app-container">
+
+        <!-- Device & Configuration -->
+        <div class="config-row">
+            <div class="config-panel card">
+                <div class="card-header">Device</div>
+                <table class="form-table" id="deviceInfoTable">
                     <tr>
-                        <td>
-                            bcdUSB
-                        </td>
+                        <td>bcdUSB</td>
                         <td>
                             <select id="bcdUSB">
-                                <option value="0100">
-                                    USB1.0
-                                </option>
-                                <option value="0110">
-                                    USB1.1
-                                </option>
-                                <option value="0200" selected>
-                                    USB2.0
-                                </option>
-                                <option value="0210">
-                                    USB2.1
-                                </option>
+                                <option value="0100">USB 1.0</option>
+                                <option value="0110">USB 1.1</option>
+                                <option value="0200" selected>USB 2.0</option>
+                                <option value="0210">USB 2.1</option>
                             </select>
                         </td>
                     </tr>
                     <tr>
-                        <td>
-                            bDeviceClass(hex)
-                        </td>
-                        <td>
-                            <input id="bDeviceClass" type="text" maxlength="2" oninput="hexValueInput(this, 2)"
-                                value="00">
+                        <td>bDeviceClass (hex)</td>
+                        <td><input id="bDeviceClass" type="text" maxlength="2" oninput="hexValueInput(this,2)" value="00"></td>
+                    </tr>
+                    <tr>
+                        <td>bDeviceSubClass (hex)</td>
+                        <td><input id="bDeviceSubClass" type="text" maxlength="2" oninput="hexValueInput(this,2)" value="00"></td>
+                    </tr>
+                    <tr>
+                        <td>bDeviceProtocol (hex)</td>
+                        <td><input id="bDeviceProtocol" type="text" maxlength="2" oninput="hexValueInput(this,2)" value="00"></td>
+                    </tr>
+                    <tr>
+                        <td>bMaxPacketSize0</td>
+                        <td><input id="bMaxPacketSize0" type="number" value="64" min="0"></td>
+                    </tr>
+                    <tr>
+                        <td>Vendor ID (hex)</td>
+                        <td style="display:flex;gap:4px;">
+                            <input id="vendorId" type="text" maxlength="4" oninput="hexValueInput(this,4)" value="0000">
+                            <button class="btn btn-icon btn-sm" type="button" onclick="randomHex4('vendorId')" title="Random">🎲</button>
                         </td>
                     </tr>
                     <tr>
-                        <td>
-                            bDeviceSubClass(hex)
-                        </td>
-                        <td>
-                            <input id="bDeviceSubClass" type="text" maxlength="2" oninput="hexValueInput(this, 2)"
-                                value="00">
+                        <td>Product ID (hex)</td>
+                        <td style="display:flex;gap:4px;">
+                            <input id="productId" type="text" maxlength="4" oninput="hexValueInput(this,4)" value="0000">
+                            <button class="btn btn-icon btn-sm" type="button" onclick="randomHex4('productId')" title="Random">🎲</button>
                         </td>
                     </tr>
                     <tr>
-                        <td>
-                            bDeviceProtocol(hex)
-                        </td>
-                        <td>
-                            <input id="bDeviceProtocol" type="text" maxlength="2" oninput="hexValueInput(this, 2)"
-                                value="00">
-                        </td>
+                        <td>bcdDevice (hex)</td>
+                        <td><input id="bcdDevice" type="text" maxlength="4" oninput="hexValueInput(this,4)" value="0000"></td>
                     </tr>
                     <tr>
-                        <td>
-                            bMaxPacketSize0
-                        </td>
-                        <td>
-                            <input id="bMaxPacketSize0" type="number" value="64" min="0">
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            Vendor ID(hex)
-                        </td>
-                        <td>
-                            <input id="vendorId" type="text" maxlength="4" oninput="hexValueInput(this, 4)"
-                                value="0000">
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            Product ID(hex)
-                        </td>
-                        <td>
-                            <input id="productId" type="text" maxlength="4" oninput="hexValueInput(this, 4)"
-                                value="0000">
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            bcdDevice(hex)
-                        </td>
-                        <td>
-                            <input id="bcdDevice" type="text" maxlength="4" oninput="hexValueInput(this, 4)"
-                                value="0000">
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            Manufacturer
-                        </td>
-                        <td>
+                        <td>Manufacturer</td>
+                        <td style="display:flex;gap:4px;">
                             <input id="ManufacturerString" type="text" value="Manufacturer">
+                            <button class="btn btn-danger btn-sm" type="button" onclick="document.getElementById('ManufacturerString').value=''" title="Clear">✕</button>
                         </td>
                     </tr>
                     <tr>
-                        <td>
-                            Product
-                        </td>
-                        <td>
+                        <td>Product</td>
+                        <td style="display:flex;gap:4px;">
                             <input id="ProductString" type="text" value="Product">
+                            <button class="btn btn-danger btn-sm" type="button" onclick="document.getElementById('ProductString').value=''" title="Clear">✕</button>
                         </td>
                     </tr>
                     <tr>
-                        <td>
-                            SerialNumber
-                        </td>
-                        <td>
+                        <td>Serial Number</td>
+                        <td style="display:flex;gap:4px;">
                             <input id="SerialNumberString" type="text" value="SerialNumber">
+                            <button class="btn btn-danger btn-sm" type="button" onclick="document.getElementById('SerialNumberString').value=''" title="Clear">✕</button>
                         </td>
                     </tr>
                 </table>
             </div>
 
-            <div style="display: flex; flex-direction: column;">
-                <div>Configuration</div>
-                <table id="configTable">
+            <div class="config-panel card">
+                <div class="card-header">Configuration</div>
+                <table class="form-table" id="configTable">
                     <tr>
+                        <td>bmAttributes</td>
                         <td>
-                            bmAttributes
-                        </td>
-                        <td>
-                            <label style="display: flex; flex-direction: row;">
-                                Bus Powered
-                                <input type="checkbox" id="busPowered" checked>
+                            <label class="inline-label">
+                                <input type="checkbox" id="busPowered" checked> Bus Powered
                             </label>
-                            <label style="display: flex; flex-direction: row;">
-                                Remote Wakeup
-                                <input type="checkbox" id="remoteWakeup">
+                            <label class="inline-label" style="margin-left:12px">
+                                <input type="checkbox" id="remoteWakeup"> Remote Wakeup
                             </label>
                         </td>
                     </tr>
                     <tr>
-                        <td>
-                            MaxPower(mA)
-                        </td>
-                        <td>
-                            <input id="maxPower" type="number" value="100" min="0">
-                        </td>
+                        <td>Max Power (mA)</td>
+                        <td><input id="maxPower" type="number" value="100" min="0"></td>
                     </tr>
                 </table>
             </div>
         </div>
-        <div style="height: 20px;"></div>
-        <div style="display: flex; flex-direction: row;">
-            <button type="button" style="align-self: start;" onclick="addHidInterface()">
-                Add HID interface
-            </button>
-            <div style="width: 20px;">
-            </div> <button type="button" style="align-self: start;" onclick="addCdcInterface()">
-                Add CDC-ACM interface
-            </button>
-            <div style="width: 20px;">
-            </div> <button type="button" style="align-self: start;" onclick="addWinUsbInterface()">
-                Add WinUSB interface
-            </button>
+
+        <!-- Interface Toolbar -->
+        <div class="toolbar">
+            <button class="btn btn-primary" type="button" onclick="addHidInterface()">+ Add HID</button>
+            <button class="btn btn-accent" type="button" onclick="addCdcInterface()">+ Add CDC-ACM</button>
+            <button class="btn btn-purple" type="button" onclick="addWinUsbInterface()">+ Add WinUSB</button>
+            <button class="btn btn-danger" type="button" onclick="deleteAllInterfaces()">Delete All</button>
         </div>
-        <div style="height: 20px;"></div>
+
+        <!-- Interface Area -->
         <div id="InterfaceArea"></div>
-    </div>
 
-    <div style="display: flex; flex-direction: column;">
-        <div style="display: flex; flex-direction: row;">
-            <button type="button" onclick="generateCode()">
-                Generate code
-            </button>
-            <div style="width: 20px;"></div>
-            <button type="button" onclick="downloadZip()">
-                Download all code(zip)
-            </button>
+        <!-- Actions -->
+        <div class="toolbar">
+            <span class="chip-label">Chip</span>
+            <select id="chipSelect" class="chip-select">
+                <option value="STM32" selected>STM32</option>
+                <option value="CH32F10x">CH32F10x</option>
+                <option value="CH58x">CH58x</option>
+                <option value="CH59x">CH59x</option>
+            </select>
+            <select id="stm32SubSelect" class="chip-select chip-sub-select" style="display:none">
+                <option value="Other" selected>Other</option>
+                <option value="STM32F10x">STM32F10x</option>
+            </select>
+            <button class="btn btn-primary" type="button" onclick="generateCode()">Generate Code</button>
+            <button class="btn btn-accent" type="button" id="downloadZipBtn" onclick="downloadZip()">Download ZIP</button>
+            <span id="zipStatus" class="zip-status"></span>
         </div>
-        <div style="height: 20px;"></div>
-        <div style="display: flex; flex-direction: row;">
-            <div style="display: flex; flex-direction: column;">
-                <div div style="display: flex; flex-direction: row;">
-                    <div>
-                        .c file
-                    </div>
-                    <div style="width: 10px;"></div>
-                    <div div style="display: flex; flex-direction: row;">
-                        <div>
-                            file name
-                        </div>
-                        <div style="width: 10px;"></div>
-                        <input type="text" id="DescriptorcFileNameInput" value="usbd_descriptor.c">
-                        <button type="button"
-                            onclick="downloadFile(`DescriptorcFileNameInput`, `DescriptorcFileData`)">download</button>
-                    </div>
+
+        <!-- Output Panels -->
+        <div class="output-grid">
+            <div class="output-panel">
+                <div class="output-panel-header">
+                    <span class="output-panel-label">Descriptor .c</span>
+                    <input class="output-filename" type="text" id="DescriptorcFileNameInput" value="usbd_descriptor.c">
+                    <button class="btn btn-sm btn-outline" type="button" onclick="downloadFile('DescriptorcFileNameInput','DescriptorcFileData')">Download</button>
+                    <button class="btn btn-sm btn-outline" type="button" onclick="copyToClipboard('DescriptorcFileData')">Copy</button>
                 </div>
-                <textarea id="DescriptorcFileData" readonly style="resize: none; height: 90vh; width: 24vw;"></textarea>
+                <pre class="output-code" tabindex="0"><code class="language-c" id="DescriptorcFileData"></code></pre>
             </div>
-            <div style="width: 10px;"></div>
-            <div style="display: flex; flex-direction: column;">
-                <div div style="display: flex; flex-direction: row;">
-                    <div>
-                        .h file
-                    </div>
-                    <div style="width: 10px;"></div>
-                    <div div style="display: flex; flex-direction: row;">
-                        <div>
-                            file name
-                        </div>
-                        <div style="width: 10px;"></div>
-                        <input type="text" id="DescriptorhFileNameInput" value="usbd_descriptor.h">
-                        <button type="button"
-                            onclick="downloadFile(`DescriptorhFileNameInput`, `DescriptorhFileData`)">download</button>
-                    </div>
+            <div class="output-panel">
+                <div class="output-panel-header">
+                    <span class="output-panel-label">Descriptor .h</span>
+                    <input class="output-filename" type="text" id="DescriptorhFileNameInput" value="usbd_descriptor.h">
+                    <button class="btn btn-sm btn-outline" type="button" onclick="downloadFile('DescriptorhFileNameInput','DescriptorhFileData')">Download</button>
+                    <button class="btn btn-sm btn-outline" type="button" onclick="copyToClipboard('DescriptorhFileData')">Copy</button>
                 </div>
-                <textarea id="DescriptorhFileData" readonly style="resize: none; height: 90vh; width: 24vw;"></textarea>
+                <pre class="output-code" tabindex="0"><code class="language-c" id="DescriptorhFileData"></code></pre>
             </div>
-            <div style="width: 10px;"></div>
-            <div style="display: flex; flex-direction: column;">
-                <div div style="display: flex; flex-direction: row;">
-                    <div>
-                        .c file
-                    </div>
-                    <div style="width: 10px;"></div>
-                    <div div style="display: flex; flex-direction: row;">
-                        <div>
-                            file name
-                        </div>
-                        <div style="width: 10px;"></div>
-                        <input type="text" id="DevicecFileNameInput" value="usb_device.c">
-                        <button type="button"
-                            onclick="downloadFile(`DevicecFileNameInput`, `DevicecFileData`)">download</button>
-                    </div>
+            <div class="output-panel">
+                <div class="output-panel-header">
+                    <span class="output-panel-label">Device .c</span>
+                    <input class="output-filename" type="text" id="DevicecFileNameInput" value="usb_device.c">
+                    <button class="btn btn-sm btn-outline" type="button" onclick="downloadFile('DevicecFileNameInput','DevicecFileData')">Download</button>
+                    <button class="btn btn-sm btn-outline" type="button" onclick="copyToClipboard('DevicecFileData')">Copy</button>
                 </div>
-                <textarea id="DevicecFileData" readonly style="resize: none; height: 90vh; width: 24vw;"></textarea>
+                <pre class="output-code" tabindex="0"><code class="language-c" id="DevicecFileData"></code></pre>
             </div>
-            <div style="width: 10px;"></div>
-            <div style="display: flex; flex-direction: column;">
-                <div div style="display: flex; flex-direction: row;">
-                    <div>
-                        .h file
-                    </div>
-                    <div style="width: 10px;"></div>
-                    <div div style="display: flex; flex-direction: row;">
-                        <div>
-                            file name
-                        </div>
-                        <div style="width: 10px;"></div>
-                        <input type="text" id="DevicehFileNameInput" value="usb_device.h">
-                        <button type="button"
-                            onclick="downloadFile(`DevicehFileNameInput`, `DevicehFileData`)">download</button>
-                    </div>
+            <div class="output-panel">
+                <div class="output-panel-header">
+                    <span class="output-panel-label">Device .h</span>
+                    <input class="output-filename" type="text" id="DevicehFileNameInput" value="usb_device.h">
+                    <button class="btn btn-sm btn-outline" type="button" onclick="downloadFile('DevicehFileNameInput','DevicehFileData')">Download</button>
+                    <button class="btn btn-sm btn-outline" type="button" onclick="copyToClipboard('DevicehFileData')">Copy</button>
                 </div>
-                <textarea id="DevicehFileData" readonly style="resize: none; height: 90vh; width: 24vw;"></textarea>
+                <pre class="output-code" tabindex="0"><code class="language-c" id="DevicehFileData"></code></pre>
             </div>
         </div>
-    </div>
 
+    </div>
 </body>
 
 </html>
