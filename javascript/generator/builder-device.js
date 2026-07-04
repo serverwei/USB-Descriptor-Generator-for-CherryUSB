@@ -1332,7 +1332,7 @@ void USBD_HID_Set_Report_Callback (uint8_t busid, uint8_t intf, uint8_t report_i
     usbd.Timeout.Tick_Per_Ms = 0;
 #endif
 
-#if (defined(STM32F1) || define(__CH32F10x_H)) && CONFIG_USBDEV_FSDEV_PMA_ACCESS != 2
+#if (defined(STM32F1) || defined(__CH32F10x_H)) && CONFIG_USBDEV_FSDEV_PMA_ACCESS != 2
 #warning "CONFIG_USBDEV_FSDEV_PMA_ACCESS should be 2 for STM32F1 (overridden in usb_config.h)"
 #endif
 
