@@ -133,11 +133,13 @@ void usb_dc_low_level_deinit(void)
     NVIC_Init(&NVIC_InitStructure);
 
 #elif defined(__CH59x_COMM_H__)
+    PFIC_DisableIRQ (USB_IRQn);
     USB_Disable();
     USB_DisablePin();
     R8_USB_INT_FG = 0xFF;
     
 #elif defined(__CH58x_COMM_H__)
+    PFIC_DisableIRQ (USB_IRQn);
     USB_Disable();
     (R16_PIN_CONFIG &= ~(RB_PIN_USB_EN | RB_UDP_PU_EN));
     R8_USB_INT_FG = 0xFF;

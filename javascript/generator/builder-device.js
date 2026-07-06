@@ -16,6 +16,8 @@ export function buildDeviceCode(interfaceInfo, cFileName, hFileName, chip = 'STM
     let haveCdc = false;
     let haveWinUSB = false;
     let haveKeyboard = false;
+    let haveConsumer = false;
+    let haveSystemControl = false;
     let functionDefString = "";
     let callbackfunctionDefString = "";
     let USBD_Event_Handler_String = "";
@@ -382,6 +384,7 @@ __weak void USBD_Event_Clr_Remote_Wakeup_Callback(uint8_t busid)
                             //Consumer
                             if (interfaceInfo[i]["Consumer"]["Enabled"]) {
                                 ConsumerReportId = interfaceInfo[i]["Consumer"]["Id"]["Value"];
+                                haveConsumer = true;
 
                                 inputString += `\
                                 \r\n#pragma pack(push, 1)\
@@ -426,6 +429,7 @@ __weak void USBD_Event_Clr_Remote_Wakeup_Callback(uint8_t busid)
                             //System Control
                             if (interfaceInfo[i]["SystemControl"]["Enabled"]) {
                                 SystemControlReportId = interfaceInfo[i]["SystemControl"]["Id"]["Value"];
+                                haveSystemControl = true;
 
                                 inputString += `\
                                 \r\n#pragma pack(push, 1)\
@@ -1245,6 +1249,9 @@ __weak void USBD_Event_Clr_Remote_Wakeup_Callback(uint8_t busid)
     \r\n#include "CherryUSB/core/usbd_core.h"\
     ${haveHid ? `\r\n#include "CherryUSB/class/hid/usbd_hid.h"` : ""}\
     ${(haveCdc || haveWinUSB) ? `\r\n#include "CherryUSB/class/cdc/usbd_cdc_acm.h"` : ""}\
+    ${haveKeyboard ? `\r\n#include "Keyboard_Map.h"` : ""}\
+    ${haveConsumer ? `\r\n#include "Consumer_Map.h"` : ""}\
+    ${haveSystemControl ? `\r\n#include "system_control_map.h"` : ""}\
     \r\n\
     \r\n#if defined(__CH32F10x_H)\
     \r\n#include "usb_regs.h"\
@@ -1453,4 +1460,9 @@ __weak void USBD_HID_Set_Report_Callback (uint8_t busid, uint8_t intf, uint8_t r
     `;
 
     document.getElementById("DevicecFileData").textContent = cFileData;
+
+    // Expose map flags for download zip
+    window.__haveKeyboard = haveKeyboard;
+    window.__haveConsumer = haveConsumer;
+    window.__haveSystemControl = haveSystemControl;
 }

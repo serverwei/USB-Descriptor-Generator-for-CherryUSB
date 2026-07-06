@@ -1,5 +1,8 @@
 ﻿import { generateCode } from '../generator/generator.js';
 import { getUsbConfigH } from '../templates/usb-config.js';
+import { KeyBoard_Map_H, KeyBoard_Map_C } from '../templates/keyboard-map.js';
+import { Consumer_Map_H, Consumer_Map_C } from '../templates/consumer-map.js';
+import { System_Control_MAP_H, System_Control_MAP_C } from '../templates/system-control.js';
 
 /**
  * 设置打包状态提示
@@ -214,6 +217,10 @@ export function downloadZip() {
     const chip = document.getElementById('chipSelect')?.value || 'STM32';
     const stm32Sub = document.getElementById('stm32SubSelect')?.value || 'Other';
 
+    const haveKeyboard = window.__haveKeyboard || false;
+    const haveConsumer = window.__haveConsumer || false;
+    const haveSystemControl = window.__haveSystemControl || false;
+
     const additionalFiles = {
         'usb_config.h': getUsbConfigH(chip, stm32Sub),
 
@@ -223,7 +230,22 @@ export function downloadZip() {
 
         [usb_descriptor_c_name]: usb_descriptor_c_data,
 
-        [usb_descriptor_h_name]: usb_descriptor_h_data
+        [usb_descriptor_h_name]: usb_descriptor_h_data,
+
+        ...(haveKeyboard ? {
+            'Keyboard_Map.h': KeyBoard_Map_H,
+            'Keyboard_Map.c': KeyBoard_Map_C
+        } : {}),
+
+        ...(haveConsumer ? {
+            'Consumer_Map.h': Consumer_Map_H,
+            'Consumer_Map.c': Consumer_Map_C
+        } : {}),
+
+        ...(haveSystemControl ? {
+            'system_control_map.h': System_Control_MAP_H,
+            'system_control_map.c': System_Control_MAP_C
+        } : {})
     };
 
     createUSBPackage(additionalFiles, chip).finally(() => {
