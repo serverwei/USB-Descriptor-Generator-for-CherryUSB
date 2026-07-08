@@ -489,7 +489,7 @@ export function parseAndBuildDescriptors(doc) {
                             let keyNum = interfaceNode.getElementsByClassName("consumerKeyNumber")[0].value & 0xFF;
                             keyNum = keyNum > 2 ? 2 : keyNum;
 
-                            stringTmp += "\r\n/* Comsumer Descriptor */\r\n";
+                            stringTmp += "\r\n/* Consumer Descriptor */\r\n";
                             stringTmp += `0x05, 0x0C,\t\t// Usage Page (Consumer Page)\r\n`;
                             stringLen += 2;
                             stringTmp += `0x09, 0x01,\t\t// Usage (Consumer Control)\r\n`;
@@ -615,10 +615,43 @@ export function parseAndBuildDescriptors(doc) {
                             stringLen += 1;
                             stringTmp += `0x03,\t\t\t// bInterfaceClass: HID\r\n`;
                             stringLen += 1;
-                            stringTmp += `0x${toHexFormat((interfaceInfo[i]["VendorDefine"]["Enabled"] && (interfaceInfo[i]["VendorDefine"]["Input"]["Id"] || interfaceInfo[i]["VendorDefine"]["Output"]["Id"])) || (interfaceInfo[i]["Mouse"]["Enabled"] && interfaceInfo[i]["Mouse"]["Id"]["Value"]) || (interfaceInfo[i]["Keyboard"]["Enabled"] && interfaceInfo[i]["Keyboard"]["Id"]["Value"]) || (interfaceInfo[i]["Consumer"]["Enabled"] && interfaceInfo[i]["Consumer"]["Id"]["Value"]) || (interfaceInfo[i]["SystemControl"]["Enabled"] && interfaceInfo[i]["SystemControl"]["Id"]["Value"]) ? 0 : 1)},\t\t\t// bInterfaceSubClass\r\n`;
-                            stringLen += 1;
-                            stringTmp += `0x00,\t\t\t// bInterfaceProtocol: 0=none, 1=keyboard, 2=mouse\r\n`;
-                            stringLen += 1;
+                            // Determine bInterfaceSubClass & bInterfaceProtocol for boot interface
+                            {
+                                let bInterfaceSubClass = 0;
+                                let bInterfaceProtocol = 0;
+                                const hasKb = interfaceInfo[i]["Keyboard"]["Enabled"];
+                                const hasMs = interfaceInfo[i]["Mouse"]["Enabled"];
+                                const hasCon = interfaceInfo[i]["Consumer"]["Enabled"];
+                                const hasSc = interfaceInfo[i]["SystemControl"]["Enabled"];
+                                const hasVd = interfaceInfo[i]["VendorDefine"]["Enabled"];
+                                const onlyKeyboard = hasKb && !hasMs && !hasCon && !hasSc && !hasVd;
+                                const onlyMouse = hasMs && !hasKb && !hasCon && !hasSc && !hasVd;
+                                if (onlyKeyboard) {
+                                    const keyNum = interfaceNode.getElementsByClassName("keyboardKeyNumber")[0].value & 0xFF;
+                                    if (keyNum == 6) {
+                                        bInterfaceSubClass = 1; // Boot Interface
+                                        bInterfaceProtocol = 1; // Keyboard
+                                    }
+                                } else if (onlyMouse) {
+                                    const rId = interfaceNode.getElementsByClassName("mouseReId")[0].value * 1;
+                                    const btnNum = interfaceNode.getElementsByClassName("mouseBtnNum")[0].value * 1;
+                                    const xMin = interfaceNode.getElementsByClassName("mouseXMin")[0].value * 1;
+                                    const xMax = interfaceNode.getElementsByClassName("mouseXMax")[0].value * 1;
+                                    const yMin = interfaceNode.getElementsByClassName("mouseYMin")[0].value * 1;
+                                    const yMax = interfaceNode.getElementsByClassName("mouseYMax")[0].value * 1;
+                                    const whl = interfaceNode.getElementsByClassName("mouseWheelEnabled")[0].checked;
+                                    const ac = interfaceNode.getElementsByClassName("mouseAcPanEnabled")[0].checked;
+                                    if (rId === 0 && btnNum === 3 && xMin === -127 && xMax === 127
+                                        && yMin === -127 && yMax === 127 && whl === true && ac === false) {
+                                        bInterfaceSubClass = 1; // Boot Interface
+                                        bInterfaceProtocol = 2; // Mouse
+                                    }
+                                }
+                                stringTmp += `0x${toHexFormat(bInterfaceSubClass)},\t\t\t// bInterfaceSubClass: 0=none, 1=boot\r\n`;
+                                stringLen += 1;
+                                stringTmp += `0x${toHexFormat(bInterfaceProtocol)},\t\t\t// bInterfaceProtocol: 0=none, 1=keyboard, 2=mouse\r\n`;
+                                stringLen += 1;
+                            }
                             stringTmp += `0x00,\t\t\t// iInterface: Index of string descriptor\r\n`;
                             stringLen += 1;
 
@@ -1152,7 +1185,7 @@ export function parseAndBuildDescriptors(doc) {
     lenguageIdLen += 1;
     lenguageIdString += "0x03,\t\t\t// bDescriptorType\r\n";
     lenguageIdLen += 1;
-    lenguageIdString += "0x33, 0x10,\t\t\t// bLength\r\n";
+    lenguageIdString += "0x09, 0x04,\t\t\t// wLANGID (English - United States)\r\n";
     lenguageIdLen += 2;
 
     let ManufacturerString = "";

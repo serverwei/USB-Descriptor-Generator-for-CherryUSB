@@ -1,8 +1,8 @@
 ﻿import { generateCode } from '../generator/generator.js';
 import { getUsbConfigH } from '../templates/usb-config.js';
-import { KeyBoard_Map_H, KeyBoard_Map_C } from '../templates/keyboard-map.js';
-import { Consumer_Map_H, Consumer_Map_C } from '../templates/consumer-map.js';
-import { System_Control_MAP_H, System_Control_MAP_C } from '../templates/system-control.js';
+import { KeyBoard_Map_H } from '../templates/keyboard-map.js';
+import { Consumer_Map_H } from '../templates/consumer-map.js';
+import { System_Control_MAP_H } from '../templates/system-control-map.js';
 
 /**
  * 设置打包状态提示
@@ -233,18 +233,15 @@ export function downloadZip() {
         [usb_descriptor_h_name]: usb_descriptor_h_data,
 
         ...(haveKeyboard ? {
-            'Keyboard_Map.h': KeyBoard_Map_H,
-            'Keyboard_Map.c': KeyBoard_Map_C
+            'Keyboard_Map.h': KeyBoard_Map_H
         } : {}),
 
         ...(haveConsumer ? {
-            'Consumer_Map.h': Consumer_Map_H,
-            'Consumer_Map.c': Consumer_Map_C
+            'Consumer_Map.h': Consumer_Map_H
         } : {}),
 
         ...(haveSystemControl ? {
-            'system_control_map.h': System_Control_MAP_H,
-            'system_control_map.c': System_Control_MAP_C
+            'system_control_map.h': System_Control_MAP_H
         } : {})
     };
 
