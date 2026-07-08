@@ -4,10 +4,10 @@ import { USB_DC_INIT_DEINIT_IRQ } from "../templates/usb-dc-init.js";
 export function buildDeviceCode(interfaceInfo, cFileName, hFileName, chip = 'STM32') {
     // Map chip selection to the appropriate #include
     const chipIncludeMap = {
-        'STM32':    '#include "main.h"',
+        'STM32': '#include "main.h"',
         'CH32F10x': '#include "ch32f10x.h"',
-        'CH58x':    '#include "CH58x_common.h"',
-        'CH59x':    '#include "CH59x_common.h"',
+        'CH58x': '#include "CH58x_common.h"',
+        'CH59x': '#include "CH59x_common.h"',
     };
     const chipInclude = chipIncludeMap[chip] || '#include "main.h"';
     const devicecFileName = document.getElementById("DevicecFileNameInput").value;
@@ -334,17 +334,20 @@ __weak void USBD_Event_Clr_Remote_Wakeup_Callback(uint8_t busid)
                                 ${KeyboardReportId ? `\
                                     \r\nuint8_t ReportId;\
                                     ` : ""}\
-                                \r\nstruct\
-                                \r\n{\
-                                \r\nuint8_t LeftCtrl : 1;\
-                                \r\nuint8_t LeftShift : 1;\
-                                \r\nuint8_t LeftAlt : 1;\
-                                \r\nuint8_t LeftGUI : 1;\
-                                \r\nuint8_t RightCtrl : 1;\
-                                \r\nuint8_t RightShift : 1;\
-                                \r\nuint8_t RightAlt : 1;\
-                                \r\nuint8_t RightGUI : 1;\
-                                \r\n} FunctionKey;\
+                                \r\nunion {\
+                                \r\n    uint8_t Modifier;\
+                                \r\n    struct\
+                                \r\n    {\
+                                \r\n        uint8_t LeftCtrl : 1;\
+                                \r\n        uint8_t LeftShift : 1;\
+                                \r\n        uint8_t LeftAlt : 1;\
+                                \r\n        uint8_t LeftGUI : 1;\
+                                \r\n        uint8_t RightCtrl : 1;\
+                                \r\n        uint8_t RightShift : 1;\
+                                \r\n        uint8_t RightAlt : 1;\
+                                \r\n        uint8_t RightGUI : 1;\
+                                \r\n    };\
+                                \r\n};\
                                 \r\nuint8_t : 8;\
                                 \r\nuint8_t NormalKey[${interfaceInfo[i]["Keyboard"]["NormalKey"]["Number"]}];\
                                 \r\n} Keyboard; \
