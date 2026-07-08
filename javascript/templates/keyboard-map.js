@@ -75,7 +75,7 @@ extern "C" {
 #define HID_KB_EQUAL             0x2E    /* = + */
 #define HID_KB_LEFT_BRACE        0x2F    /* [ { */
 #define HID_KB_RIGHT_BRACE       0x30    /* ] } */
-#define HID_KB_BACKSLASH         0x31    /* \\ | */
+#define HID_KB_BACKSLASH         0x31    /* \ | */
 #define HID_KB_NON_US_HASH       0x32    /* # ~ (非美式) */
 #define HID_KB_SEMICOLON         0x33    /* ; : */
 #define HID_KB_APOSTROPHE        0x34    /* ' " */
@@ -119,7 +119,7 @@ extern "C" {
 #define HID_KB_UP                0x52    /* 方向键：上 */
 
 /*──────────────────────────────────────────────────────
- * 0x53 - 0x63: 数字小键盘 Keypad
+ * 0x53 - 0x64: 数字小键盘与非美式键
  *──────────────────────────────────────────────────────*/
 #define HID_KB_NUM_LOCK          0x53    /* 小键盘锁定 */
 #define HID_KB_KP_SLASH          0x54    /* 小键盘 / */
@@ -138,11 +138,135 @@ extern "C" {
 #define HID_KB_KP_9              0x61    /* PageUp */
 #define HID_KB_KP_0              0x62    /* Insert */
 #define HID_KB_KP_DOT            0x63    /* Delete */
+#define HID_KB_NON_US_BACKSLASH  0x64    /* \ | (非美式) */
 
 /*──────────────────────────────────────────────────────
- * 0x64: 非美式键盘
+ * 0x65 - 0x84: 扩展功能键、F13 - F24 及系统控制键
  *──────────────────────────────────────────────────────*/
-#define HID_KB_NON_US_BACKSLASH  0x64    /* \\ | (非美式) */
+#define HID_KB_APPLICATION       0x65    /* 菜单/应用键 (ContextMenu) */
+#define HID_KB_POWER             0x66    /* 电源键 */
+#define HID_KB_KP_EQUAL          0x67    /* 小键盘 = */
+#define HID_KB_F13               0x68    /* 功能键 F13 */
+#define HID_KB_F14               0x69    /* 功能键 F14 */
+#define HID_KB_F15               0x6A    /* 功能键 F15 */
+#define HID_KB_F16               0x6B    /* 功能键 F16 */
+#define HID_KB_F17               0x6C    /* 功能键 F17 */
+#define HID_KB_F18               0x6D    /* 功能键 F18 */
+#define HID_KB_F19               0x6E    /* 功能键 F19 */
+#define HID_KB_F20               0x6F    /* 功能键 F20 */
+#define HID_KB_F21               0x70    /* 功能键 F21 */
+#define HID_KB_F22               0x71    /* 功能键 F22 */
+#define HID_KB_F23               0x72    /* 功能键 F23 */
+#define HID_KB_F24               0x73    /* 功能键 F24 */
+#define HID_KB_EXECUTE           0x74    /* 执行键 */
+#define HID_KB_HELP              0x75    /* 帮助键 */
+#define HID_KB_MENU              0x76    /* 菜单键 */
+#define HID_KB_SELECT            0x77    /* 选择键 */
+#define HID_KB_STOP              0x78    /* 停止键 */
+#define HID_KB_AGAIN             0x79    /* 重做键 */
+#define HID_KB_UNDO              0x7A    /* 撤销键 */
+#define HID_KB_CUT               0x7B    /* 剪切键 */
+#define HID_KB_COPY              0x7C    /* 复制键 */
+#define HID_KB_PASTE             0x7D    /* 粘贴键 */
+#define HID_KB_FIND              0x7E    /* 查找键 */
+#define HID_KB_MUTE              0x7F    /* 静音键 (键盘特有) */
+#define HID_KB_VOLUME_UP         0x80    /* 音量加 (键盘特有) */
+#define HID_KB_VOLUME_DOWN       0x81    /* 音量减 (键盘特有) */
+#define HID_KB_LOCKING_CAPS      0x82    /* 锁定大写键 */
+#define HID_KB_LOCKING_NUM       0x83    /* 锁定小键盘键 */
+#define HID_KB_LOCKING_SCROLL    0x84    /* 锁定滚动键 */
+
+/*──────────────────────────────────────────────────────
+ * 0x85 - 0x9F: 国际化与语言键、系统专用键
+ *──────────────────────────────────────────────────────*/
+#define HID_KB_KP_COMMA          0x85    /* 小键盘逗号 */
+#define HID_KB_KP_EQUAL_AS400    0x86    /* 小键盘等号 (AS/400 格式) */
+#define HID_KB_INTERNATIONAL_1   0x87    /* 国际键 1 (日系键盘 Ro) */
+#define HID_KB_INTERNATIONAL_2   0x88    /* 国际键 2 (日系键盘 Katakana/Hiragana) */
+#define HID_KB_INTERNATIONAL_3   0x89    /* 国际键 3 (日系键盘 Yen) */
+#define HID_KB_INTERNATIONAL_4   0x8A    /* 国际键 4 (日系键盘 Henkan) */
+#define HID_KB_INTERNATIONAL_5   0x8B    /* 国际键 5 (日系键盘 Muhenkan) */
+#define HID_KB_INTERNATIONAL_6   0x8C    /* 国际键 6 (PC-9800 Keypad 逗号) */
+#define HID_KB_INTERNATIONAL_7   0x8D    /* 国际键 7 */
+#define HID_KB_INTERNATIONAL_8   0x8E    /* 国际键 8 */
+#define HID_KB_INTERNATIONAL_9   0x8F    /* 国际键 9 */
+#define HID_KB_LANG_1            0x90    /* 语言键 1 (韩系键盘 Hangul/English) */
+#define HID_KB_LANG_2            0x91    /* 语言键 2 (韩系键盘 Hanja) */
+#define HID_KB_LANG_3            0x92    /* 语言键 3 (日系键盘 Katakana) */
+#define HID_KB_LANG_4            0x93    /* 语言键 4 (日系键盘 Hiragana) */
+#define HID_KB_LANG_5            0x94    /* 语言键 5 (日系键盘 Zenkaku/Hankaku) */
+#define HID_KB_LANG_6            0x95    /* 语言键 6 */
+#define HID_KB_LANG_7            0x96    /* 语言键 7 */
+#define HID_KB_LANG_8            0x97    /* 语言键 8 */
+#define HID_KB_LANG_9            0x98    /* 语言键 9 */
+#define HID_KB_ALTERNATE_ERASE   0x99    /* 替换擦除键 */
+#define HID_KB_SYSREQ_ATTN       0x9A    /* SysReq / Attention 键 */
+#define HID_KB_CANCEL            0x9B    /* 取消键 */
+#define HID_KB_CLEAR             0x9C    /* 清除键 */
+#define HID_KB_PRIOR             0x9D    /* 先前键 */
+#define HID_KB_RETURN            0x9E    /* 返回键 */
+#define HID_KB_SEPARATOR         0x9F    /* 分隔符 */
+
+/*──────────────────────────────────────────────────────
+ * 0xA0 - 0xAF: 操作控制键与小键盘 00/000
+ *──────────────────────────────────────────────────────*/
+#define HID_KB_OUT               0xA0    /* 传出键 */
+#define HID_KB_OPER              0xA1    /* 操作键 */
+#define HID_KB_CLEAR_AGAIN       0xA2    /* 再次清除键 */
+#define HID_KB_CRSEL_PROPS       0xA3    /* CrSel / 属性键 */
+#define HID_KB_EXSEL             0xA4    /* ExSel 键 */
+/* 0xA5 - 0xAF 保留 (Reserved) */
+#define HID_KB_KP_00             0xB0    /* 小键盘 00 */
+#define HID_KB_KP_000            0xB1    /* 小键盘 000 */
+#define HID_KB_THOUSANDS_SEP     0xB2    /* 千分位分隔符 */
+#define HID_KB_DECIMAL_SEP       0xB3    /* 小数点分隔符 */
+#define HID_KB_CURRENCY_UNIT     0xB4    /* 货币单位 */
+#define HID_KB_CURRENCY_SUB_UNIT 0xB5    /* 货币子单位 */
+
+/*──────────────────────────────────────────────────────
+ * 0xB6 - 0xDF: 小键盘各种符号与内存按键
+ *──────────────────────────────────────────────────────*/
+#define HID_KB_KP_LEFT_PAREN     0xB6    /* 小键盘 ( */
+#define HID_KB_KP_RIGHT_PAREN    0xB7    /* 小键盘 ) */
+#define HID_KB_KP_LEFT_BRACE     0xB8    /* 小键盘 { */
+#define HID_KB_KP_RIGHT_BRACE    0xB9    /* 小键盘 } */
+#define HID_KB_KP_TAB            0xBA    /* 小键盘 Tab */
+#define HID_KB_KP_BACKSPACE      0xBB    /* 小键盘 退格 */
+#define HID_KB_KP_A              0xBC    /* 小键盘 A */
+#define HID_KB_KP_B              0xBD    /* 小键盘 B */
+#define HID_KB_KP_C              0xBE    /* 小键盘 C */
+#define HID_KB_KP_D              0xBF    /* 小键盘 D */
+#define HID_KB_KP_E              0xC0    /* 小键盘 E */
+#define HID_KB_KP_F              0xC1    /* 小键盘 F */
+#define HID_KB_KP_XOR            0xC2    /* 小键盘 XOR */
+#define HID_KB_KP_CARET          0xC3    /* 小键盘 ^ */
+#define HID_KB_KP_PERCENT        0xC4    /* 小键盘 % */
+#define HID_KB_KP_LESS           0xC5    /* 小键盘 < */
+#define HID_KB_KP_GREATER        0xC6    /* 小键盘 > */
+#define HID_KB_KP_AMPERSAND      0xC7    /* 小键盘 & */
+#define HID_KB_KP_LOGICAL_AND    0xC8    /* 小键盘 && */
+#define HID_KB_KP_VERTICAL_BAR   0xC9    /* 小键盘 | */
+#define HID_KB_KP_LOGICAL_OR     0xCA    /* 小键盘 || */
+#define HID_KB_KP_COLON          0xCB    /* 小键盘 : */
+#define HID_KB_KP_HASH           0xCC    /* 小键盘 # */
+#define HID_KB_KP_SPACE          0xCD    /* 小键盘 空格 */
+#define HID_KB_KP_AT             0xCE    /* 小键盘 @ */
+#define HID_KB_KP_EXCLAMATION    0xCF    /* 小键盘 ! */
+#define HID_KB_KP_MEM_STORE      0xD0    /* 小键盘内存：存储 */
+#define HID_KB_KP_MEM_RECALL     0xD1    /* 小键盘内存：调用 */
+#define HID_KB_KP_MEM_CLEAR      0xD2    /* 小键盘内存：清除 */
+#define HID_KB_KP_MEM_ADD        0xD3    /* 小键盘内存：加 */
+#define HID_KB_KP_MEM_SUBTRACT   0xD4    /* 小键盘内存：减 */
+#define HID_KB_KP_MEM_MULTIPLY   0xD5    /* 小键盘内存：乘 */
+#define HID_KB_KP_MEM_DIVIDE     0xD6    /* 小键盘内存：除 */
+#define HID_KB_KP_PLUS_MINUS     0xD7    /* 小键盘 +/- */
+#define HID_KB_KP_CLEAR_MEM      0xD8    /* 小键盘清除 */
+#define HID_KB_KP_CLEAR_ENTRY    0xD9    /* 小键盘清除条目 */
+#define HID_KB_KP_BINARY         0xDA    /* 小键盘二进制 */
+#define HID_KB_KP_OCTAL          0xDB    /* 小键盘八进制 */
+#define HID_KB_KP_DECIMAL        0xDC    /* 小键盘十进制 */
+#define HID_KB_KP_HEXADECIMAL    0xDD    /* 小键盘十六进制 */
+/* 0xDE - 0xDF 保留 (Reserved) */
 
 /*──────────────────────────────────────────────────────
  * 0xE0 - 0xE7: 修饰键 Modifiers
