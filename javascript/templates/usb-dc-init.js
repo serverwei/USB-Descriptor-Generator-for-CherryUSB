@@ -68,9 +68,7 @@ void usb_dc_low_level_init(void)
     HAL_NVIC_EnableIRQ(USB_IRQn);
 #endif
 }
-#pragma endregion usb_dc_low_level_init
 
-#pragma region usb_dc_low_level_deinit
 #elif defined(__CH32F10x_H)
 void usb_dc_low_level_init(void)
 {
@@ -106,8 +104,13 @@ void usb_dc_low_level_init (void) {
 // You need to fill the usb_dc_low_level_init function correctly
 void usb_dc_low_level_init(void)
 {
+#error "You need to fill the usb_dc_low_level_init function correctly"
 }
 #endif
+
+#pragma endregion usb_dc_low_level_init
+
+#pragma region usb_dc_low_level_deinit
 
 void usb_dc_low_level_deinit(void)
 {
