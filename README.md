@@ -26,7 +26,7 @@
 * **底层初始化与中断**：
     目前工具仅针对以下 MCU 适配了 void usb_dc_low_level_init(void) 和 USB 中断回调函数的自动生成：
     * **ST 系列**：STM32F0, STM32L0, STM32G4, STM32F1
-    * **沁恒系列**：CH32F10x, CH58x, CH59x
+    * **沁恒系列**：CH32F10x, CH58x, CH59x， CH32V20x
     > 注意：若使用上述以外的芯片型号，相关底层函数请自行解决。
 
 ---
