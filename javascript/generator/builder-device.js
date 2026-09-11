@@ -8,6 +8,7 @@ export function buildDeviceCode(interfaceInfo, cFileName, hFileName, chip = 'STM
         'CH32F10x': '#include "ch32f10x.h"',
         'CH58x': '#include "CH58x_common.h"',
         'CH59x': '#include "CH59x_common.h"',
+        'CH32V20x': '#include "ch32v20x.h"',
     };
     const chipInclude = chipIncludeMap[chip] || '#include "main.h"';
     const devicecFileName = document.getElementById("DevicecFileNameInput").value;
@@ -1256,10 +1257,6 @@ __weak void USBD_Event_Clr_Remote_Wakeup_Callback(uint8_t busid)
     ${haveConsumer ? `\r\n#include "Consumer_Map.h"` : ""}\
     ${haveSystemControl ? `\r\n#include "system_control_map.h"` : ""}\
     \r\n\
-    \r\n#if defined(__CH32F10x_H)\
-    \r\n#include "usb_regs.h"\
-    \r\n#endif\
-    \r\n\
     \r\n#define USBD_STATE_IDLE 0u\
     \r\n#define USBD_STATE_BUSY 1u\
     \r\n#define USBD_BUSID 0u\
@@ -1277,6 +1274,10 @@ void USBD_Event_Suspend_Callback(uint8_t busid);
 void USBD_Event_Configured_Callback(uint8_t busid);
 void USBD_Event_Set_Remote_Wakeup_Callback(uint8_t busid);
 void USBD_Event_Clr_Remote_Wakeup_Callback(uint8_t busid);
+
+#if defined(__CH32V20x_H)
+void USBD_WakeUp_Callback(void);
+#endif
 
 void USBD_HID_Set_Report_Callback (uint8_t busid, uint8_t intf, uint8_t report_id, uint8_t report_type, uint8_t *report, uint32_t report_len);\r\n${callbackfunctionDefString}\
 \r\n\
@@ -1325,6 +1326,12 @@ void USBD_HID_Set_Report_Callback (uint8_t busid, uint8_t intf, uint8_t report_i
 
     SysTick->CTLR |= SysTick_CTLR_STE;
 
+#elif defined(__CH32V20x_H)
+    /* 1 ms SysTick time base for USBD_InEp_Write_Timeout() */
+    USBD_SysTick_Init();
+    usbd.Timeout.Get_SysTick = &USBD_SysTick_GetTick;
+    usbd.Timeout.Tick_Per_Ms = 1;
+
 #else
     /* --- Non-STM32 or Bare-metal Environment --- */
     /**
@@ -1340,6 +1347,8 @@ void USBD_HID_Set_Report_Callback (uint8_t busid, uint8_t intf, uint8_t report_i
 
     // TODO: User must define how many ticks increment in 1 millisecond.
     usbd.Timeout.Tick_Per_Ms = 0;
+    
+#warning "usbd.Timeout.Get_SysTick and usbd.Timeout.Tick_Per_Ms not inited."
 #endif
 
 #if (defined(STM32F1) || defined(__CH32F10x_H)) && CONFIG_USBDEV_FSDEV_PMA_ACCESS != 2
@@ -1446,6 +1455,12 @@ __weak void USBD_HID_Set_Report_Callback (uint8_t busid, uint8_t intf, uint8_t r
     cFileData = `${cFileData}\
     \r\n\
     ${USBD_Event_Handler_String}\
+    \r\n\
+#if defined(__CH32V20x_H)
+__weak void USBD_WakeUp_Callback(void)
+{
+}
+#endif
     \r\n\
     ${USBD_Hid_Set_Report_String}\
     \r\n\
