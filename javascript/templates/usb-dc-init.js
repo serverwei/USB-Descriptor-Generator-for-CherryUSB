@@ -9,8 +9,8 @@ export const USB_DC_INIT_DEINIT_IRQ = `\
 #endif
 
 #ifndef USB_BASE
-#if defined(__CH32F10x_H)
-#define USB_BASE RegBase
+#if defined(__CH32F10x_H) || defined(__CH32V20x_H)
+#define USB_BASE (0x40005C00UL)
 #elif defined(__CH58x_COMM_H__) || defined(__CH59x_COMM_H__)
 #define USB_BASE USB_BASE_ADDR
 #else
@@ -19,10 +19,54 @@ export const USB_DC_INIT_DEINIT_IRQ = `\
 #endif
 #endif
 
+#if defined(__CH32V20x_H)
+/* USB control register (FSDEV CNTR, RegBase + 0x40), replaces usb_regs.h macros */
+#define USB_CNTR_REG ((__IO unsigned *)(USB_BASE + 0x40UL))
+#endif
+
+#pragma region USBD_SysTick
+
+#if defined(__CH32V20x_H)
+/* 1 ms time base for the USBD_InEp_Write_Timeout() timeout function. */
+static volatile uint32_t usbd_systick_ms = 0;
+
+void SysTick_Handler(void) __attribute__((interrupt("WCH-Interrupt-fast")));
+void SysTick_Handler(void)
+{
+    SysTick->SR = 0;
+    usbd_systick_ms++;
+}
+
+static uint32_t USBD_SysTick_GetTick(void)
+{
+    return usbd_systick_ms;
+}
+
+static void USBD_SysTick_Init(void)
+{
+    /* Only configure SysTick when it is not already running as an
+     * interrupt time base (both STE and STIE enabled). */
+    if ((SysTick->CTLR & ((1u << 0) | (1u << 1))) != ((1u << 0) | (1u << 1))) {
+        SysTick->SR  = 0;
+        SysTick->CNT = 0;
+        SysTick->CMP = SystemCoreClock / 1000 - 1; /* 1 ms (CMP + 1 cycles of HCLK) */
+
+        /* STE | STIE | STCLK (HCLK) | STRE (auto reload), down counting mode */
+        SysTick->CTLR = (1u << 0) | (1u << 1) | (1u << 2) | (1u << 3);
+
+        NVIC_SetPriority(SysTicK_IRQn, 1);
+        NVIC_EnableIRQ(SysTicK_IRQn);
+    }
+}
+#endif
+
+#pragma endregion USBD_SysTick
+
 #pragma region usb_dc_low_level_init
-#if defined(STM32F0) || defined(STM32L0) || defined(STM32G4) || defined(STM32F1)
+
 void usb_dc_low_level_init(void)
 {
+#if defined(STM32F0) || defined(STM32L0) || defined(STM32G4) || defined(STM32F1)
 #if defined(RCC_OSCILLATORTYPE_HSI48)
     // #if defined(STM32G4) || defined(STM32F0) || defined(STM32L0)
     RCC_OscInitTypeDef RCC_OscInitStruct = {0};
@@ -67,11 +111,8 @@ void usb_dc_low_level_init(void)
     HAL_NVIC_SetPriority(USB_IRQn, 0, 0);
     HAL_NVIC_EnableIRQ(USB_IRQn);
 #endif
-}
 
 #elif defined(__CH32F10x_H)
-void usb_dc_low_level_init(void)
-{
     if (SystemCoreClock == 72000000) {
         RCC_USBCLKConfig(RCC_USBCLKSource_PLLCLK_1Div5);
     } else if (SystemCoreClock == 48000000) {
@@ -93,20 +134,56 @@ void usb_dc_low_level_init(void)
     NVIC_InitStructure.NVIC_IRQChannelSubPriority        = 0;
     NVIC_InitStructure.NVIC_IRQChannelCmd                = ENABLE;
     NVIC_Init(&NVIC_InitStructure);
-}
 
 #elif defined(__CH58x_COMM_H__) || defined(__CH59x_COMM_H__)
-void usb_dc_low_level_init (void) {
-    PFIC_EnableIRQ (USB_IRQn);
-}
+    PFIC_EnableIRQ(USB_IRQn);
+
+#elif defined(__CH32V20x_H)
+#if defined(CH32V20x_D8) || defined(CH32V20x_D8W)
+    if (SystemCoreClock == 240000000) {
+        RCC_USBCLKConfig(RCC_USBCLKSource_PLLCLK_Div5);
+    } else
+#endif
+        if (SystemCoreClock == 144000000) {
+        RCC_USBCLKConfig(RCC_USBCLKSource_PLLCLK_Div3);
+    } else if (SystemCoreClock == 96000000) {
+        RCC_USBCLKConfig(RCC_USBCLKSource_PLLCLK_Div2);
+    } else if (SystemCoreClock == 48000000) {
+        RCC_USBCLKConfig(RCC_USBCLKSource_PLLCLK_Div1);
+    }
+    RCC_APB1PeriphClockCmd(RCC_APB1Periph_USB, ENABLE);
+
+    (EXTEN->EXTEN_CTR) |= EXTEN_USBD_PU_EN;
+
+    NVIC_InitTypeDef NVIC_InitStructure;
+    EXTI_InitTypeDef EXTI_InitStructure;
+
+    EXTI_ClearITPendingBit(EXTI_Line18);
+    EXTI_InitStructure.EXTI_Line    = EXTI_Line18;
+    EXTI_InitStructure.EXTI_Mode    = EXTI_Mode_Interrupt;
+    EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Rising_Falling;
+    EXTI_InitStructure.EXTI_LineCmd = ENABLE;
+    EXTI_Init(&EXTI_InitStructure);
+
+    NVIC_InitStructure.NVIC_IRQChannel                   = USB_LP_CAN1_RX0_IRQn;
+    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
+    NVIC_InitStructure.NVIC_IRQChannelSubPriority        = 0;
+    NVIC_InitStructure.NVIC_IRQChannelCmd                = ENABLE;
+    NVIC_Init(&NVIC_InitStructure);
+
+    NVIC_InitStructure.NVIC_IRQChannel                   = USBWakeUp_IRQn;
+    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
+    NVIC_InitStructure.NVIC_IRQChannelSubPriority        = 0;
+    NVIC_InitStructure.NVIC_IRQChannelCmd                = ENABLE;
+    NVIC_Init(&NVIC_InitStructure);
 
 #else
+
 // You need to fill the usb_dc_low_level_init function correctly
-void usb_dc_low_level_init(void)
-{
 #error "You need to fill the usb_dc_low_level_init function correctly"
-}
+
 #endif
+}
 
 #pragma endregion usb_dc_low_level_init
 
@@ -136,24 +213,44 @@ void usb_dc_low_level_deinit(void)
     NVIC_Init(&NVIC_InitStructure);
 
 #elif defined(__CH59x_COMM_H__)
-    PFIC_DisableIRQ (USB_IRQn);
+    PFIC_DisableIRQ(USB_IRQn);
     USB_Disable();
     USB_DisablePin();
     R8_USB_INT_FG = 0xFF;
-    
+
 #elif defined(__CH58x_COMM_H__)
-    PFIC_DisableIRQ (USB_IRQn);
+    PFIC_DisableIRQ(USB_IRQn);
     USB_Disable();
     (R16_PIN_CONFIG &= ~(RB_PIN_USB_EN | RB_UDP_PU_EN));
     R8_USB_INT_FG = 0xFF;
-    
-#else
 
+#elif defined(__CH32V20x_H)
+    NVIC_InitTypeDef NVIC_InitStructure;
+    EXTI_InitTypeDef EXTI_InitStructure;
+
+    EXTI_ClearITPendingBit(EXTI_Line18);
+    EXTI_InitStructure.EXTI_Line    = EXTI_Line18;
+    EXTI_InitStructure.EXTI_LineCmd = DISABLE;
+    EXTI_Init(&EXTI_InitStructure);
+
+    NVIC_InitStructure.NVIC_IRQChannel    = USB_LP_CAN1_RX0_IRQn;
+    NVIC_InitStructure.NVIC_IRQChannelCmd = DISABLE;
+    NVIC_Init(&NVIC_InitStructure);
+
+    NVIC_InitStructure.NVIC_IRQChannel    = USBWakeUp_IRQn;
+    NVIC_InitStructure.NVIC_IRQChannelCmd = DISABLE;
+    NVIC_Init(&NVIC_InitStructure);
+
+    (EXTEN->EXTEN_CTR) &= ~EXTEN_USBD_PU_EN;
+#else
+#warning "usb_dc_low_level_deinit() is empty."
 #endif
 }
+
 #pragma endregion usb_dc_low_level_deinit
 
 #pragma region USB_IRQHandler
+
 #if defined(STM32F0) || defined(STM32L0)
 void USB_IRQHandler(void)
 {
@@ -168,7 +265,10 @@ void USB_LP_IRQHandler(void)
     USBD_IRQHandler(USBD_BUSID);
 }
 
-#elif defined(__CH32F10x_H)
+#elif defined(__CH32F10x_H) || defined(__CH32V20x_H)
+#if defined(__CH32V20x_H)
+void USB_LP_CAN1_RX0_IRQHandler(void) __attribute__((interrupt("WCH-Interrupt-fast")));
+#endif
 void USB_LP_CAN1_RX0_IRQHandler(void)
 {
     extern void USBD_IRQHandler(uint8_t busid);
@@ -177,14 +277,31 @@ void USB_LP_CAN1_RX0_IRQHandler(void)
 
 #elif defined(__CH59x_COMM_H__) || defined(__CH58x_COMM_H__)
 
+#elif defined(__CH32V20x_H)
+    /* 1 ms SysTick time base for USBD_InEp_Write_Timeout() */
+    USBD_SysTick_Init();
+    usbd.Timeout.Get_SysTick = &USBD_SysTick_GetTick;
+    usbd.Timeout.Tick_Per_Ms = 1;
+
 #else
 // You need to replace USB_IRQHandler with the correct USB interrupt callback function
+#error "You need to replace USB_IRQHandler with the correct USB interrupt callback function"
 void USB_IRQHandler(void)
 {
     extern void USBD_IRQHandler(uint8_t busid);
     USBD_IRQHandler(USBD_BUSID);
 }
 #endif
+
+#if defined(__CH32V20x_H)
+void USBWakeUp_IRQHandler(void) __attribute__((interrupt("WCH-Interrupt-fast")));
+void USBWakeUp_IRQHandler(void)
+{
+    EXTI_ClearITPendingBit(EXTI_Line18);
+    USBD_WakeUp_Callback();
+}
+#endif
+
 #pragma endregion USB_IRQHandler\
 \r\n\
 `;
