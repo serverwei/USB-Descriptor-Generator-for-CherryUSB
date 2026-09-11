@@ -9,7 +9,8 @@
     <script type="module" src="javascript/usbddg.js?v=13"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/c.min.js"></script>
 </head>
@@ -35,15 +36,18 @@
                     </tr>
                     <tr>
                         <td>bDeviceClass (hex)</td>
-                        <td><input id="bDeviceClass" type="text" maxlength="2" oninput="hexValueInput(this,2)" value="00"></td>
+                        <td><input id="bDeviceClass" type="text" maxlength="2" oninput="hexValueInput(this,2)"
+                                value="00"></td>
                     </tr>
                     <tr>
                         <td>bDeviceSubClass (hex)</td>
-                        <td><input id="bDeviceSubClass" type="text" maxlength="2" oninput="hexValueInput(this,2)" value="00"></td>
+                        <td><input id="bDeviceSubClass" type="text" maxlength="2" oninput="hexValueInput(this,2)"
+                                value="00"></td>
                     </tr>
                     <tr>
                         <td>bDeviceProtocol (hex)</td>
-                        <td><input id="bDeviceProtocol" type="text" maxlength="2" oninput="hexValueInput(this,2)" value="00"></td>
+                        <td><input id="bDeviceProtocol" type="text" maxlength="2" oninput="hexValueInput(this,2)"
+                                value="00"></td>
                     </tr>
                     <tr>
                         <td>bMaxPacketSize0</td>
@@ -53,39 +57,48 @@
                         <td>Vendor ID (hex)</td>
                         <td style="display:flex;gap:4px;">
                             <input id="vendorId" type="text" maxlength="4" oninput="hexValueInput(this,4)" value="0000">
-                            <button class="btn btn-icon btn-sm" type="button" onclick="randomHex4('vendorId')" title="Random">🎲</button>
+                            <button class="btn btn-icon btn-sm" type="button" onclick="randomHex4('vendorId')"
+                                title="Random">🎲</button>
                         </td>
                     </tr>
                     <tr>
                         <td>Product ID (hex)</td>
                         <td style="display:flex;gap:4px;">
-                            <input id="productId" type="text" maxlength="4" oninput="hexValueInput(this,4)" value="0000">
-                            <button class="btn btn-icon btn-sm" type="button" onclick="randomHex4('productId')" title="Random">🎲</button>
+                            <input id="productId" type="text" maxlength="4" oninput="hexValueInput(this,4)"
+                                value="0000">
+                            <button class="btn btn-icon btn-sm" type="button" onclick="randomHex4('productId')"
+                                title="Random">🎲</button>
                         </td>
                     </tr>
                     <tr>
                         <td>bcdDevice (hex)</td>
-                        <td><input id="bcdDevice" type="text" maxlength="4" oninput="hexValueInput(this,4)" value="0000"></td>
+                        <td><input id="bcdDevice" type="text" maxlength="4" oninput="hexValueInput(this,4)"
+                                value="0000"></td>
                     </tr>
                     <tr>
                         <td>Manufacturer</td>
                         <td style="display:flex;gap:4px;">
                             <input id="ManufacturerString" type="text" value="Manufacturer">
-                            <button class="btn btn-danger btn-sm" type="button" onclick="document.getElementById('ManufacturerString').value=''" title="Clear">✕</button>
+                            <button class="btn btn-danger btn-sm" type="button"
+                                onclick="document.getElementById('ManufacturerString').value=''"
+                                title="Clear">✕</button>
                         </td>
                     </tr>
                     <tr>
                         <td>Product</td>
                         <td style="display:flex;gap:4px;">
                             <input id="ProductString" type="text" value="Product">
-                            <button class="btn btn-danger btn-sm" type="button" onclick="document.getElementById('ProductString').value=''" title="Clear">✕</button>
+                            <button class="btn btn-danger btn-sm" type="button"
+                                onclick="document.getElementById('ProductString').value=''" title="Clear">✕</button>
                         </td>
                     </tr>
                     <tr>
                         <td>Serial Number</td>
                         <td style="display:flex;gap:4px;">
                             <input id="SerialNumberString" type="text" value="SerialNumber">
-                            <button class="btn btn-danger btn-sm" type="button" onclick="document.getElementById('SerialNumberString').value=''" title="Clear">✕</button>
+                            <button class="btn btn-danger btn-sm" type="button"
+                                onclick="document.getElementById('SerialNumberString').value=''"
+                                title="Clear">✕</button>
                         </td>
                     </tr>
                 </table>
@@ -132,13 +145,15 @@
                 <option value="CH32F10x">CH32F10x</option>
                 <option value="CH58x">CH58x</option>
                 <option value="CH59x">CH59x</option>
+                <option value="CH32V20x">CH32V20x</option>
             </select>
             <select id="stm32SubSelect" class="chip-select chip-sub-select" style="display:none">
                 <option value="Other" selected>Other</option>
                 <option value="STM32F10x">STM32F10x</option>
             </select>
             <button class="btn btn-primary" type="button" onclick="generateCode()">Generate Code</button>
-            <button class="btn btn-accent" type="button" id="downloadZipBtn" onclick="downloadZip()">Download ZIP</button>
+            <button class="btn btn-accent" type="button" id="downloadZipBtn" onclick="downloadZip()">Download
+                ZIP</button>
             <span id="zipStatus" class="zip-status"></span>
         </div>
 
@@ -148,8 +163,10 @@
                 <div class="output-panel-header">
                     <span class="output-panel-label">Descriptor .c</span>
                     <input class="output-filename" type="text" id="DescriptorcFileNameInput" value="usbd_descriptor.c">
-                    <button class="btn btn-sm btn-outline" type="button" onclick="downloadFile('DescriptorcFileNameInput','DescriptorcFileData')">Download</button>
-                    <button class="btn btn-sm btn-outline" type="button" onclick="copyToClipboard('DescriptorcFileData')">Copy</button>
+                    <button class="btn btn-sm btn-outline" type="button"
+                        onclick="downloadFile('DescriptorcFileNameInput','DescriptorcFileData')">Download</button>
+                    <button class="btn btn-sm btn-outline" type="button"
+                        onclick="copyToClipboard('DescriptorcFileData')">Copy</button>
                 </div>
                 <pre class="output-code" tabindex="0"><code class="language-c" id="DescriptorcFileData"></code></pre>
             </div>
@@ -157,8 +174,10 @@
                 <div class="output-panel-header">
                     <span class="output-panel-label">Descriptor .h</span>
                     <input class="output-filename" type="text" id="DescriptorhFileNameInput" value="usbd_descriptor.h">
-                    <button class="btn btn-sm btn-outline" type="button" onclick="downloadFile('DescriptorhFileNameInput','DescriptorhFileData')">Download</button>
-                    <button class="btn btn-sm btn-outline" type="button" onclick="copyToClipboard('DescriptorhFileData')">Copy</button>
+                    <button class="btn btn-sm btn-outline" type="button"
+                        onclick="downloadFile('DescriptorhFileNameInput','DescriptorhFileData')">Download</button>
+                    <button class="btn btn-sm btn-outline" type="button"
+                        onclick="copyToClipboard('DescriptorhFileData')">Copy</button>
                 </div>
                 <pre class="output-code" tabindex="0"><code class="language-c" id="DescriptorhFileData"></code></pre>
             </div>
@@ -166,8 +185,10 @@
                 <div class="output-panel-header">
                     <span class="output-panel-label">Device .c</span>
                     <input class="output-filename" type="text" id="DevicecFileNameInput" value="usb_device.c">
-                    <button class="btn btn-sm btn-outline" type="button" onclick="downloadFile('DevicecFileNameInput','DevicecFileData')">Download</button>
-                    <button class="btn btn-sm btn-outline" type="button" onclick="copyToClipboard('DevicecFileData')">Copy</button>
+                    <button class="btn btn-sm btn-outline" type="button"
+                        onclick="downloadFile('DevicecFileNameInput','DevicecFileData')">Download</button>
+                    <button class="btn btn-sm btn-outline" type="button"
+                        onclick="copyToClipboard('DevicecFileData')">Copy</button>
                 </div>
                 <pre class="output-code" tabindex="0"><code class="language-c" id="DevicecFileData"></code></pre>
             </div>
@@ -175,8 +196,10 @@
                 <div class="output-panel-header">
                     <span class="output-panel-label">Device .h</span>
                     <input class="output-filename" type="text" id="DevicehFileNameInput" value="usb_device.h">
-                    <button class="btn btn-sm btn-outline" type="button" onclick="downloadFile('DevicehFileNameInput','DevicehFileData')">Download</button>
-                    <button class="btn btn-sm btn-outline" type="button" onclick="copyToClipboard('DevicehFileData')">Copy</button>
+                    <button class="btn btn-sm btn-outline" type="button"
+                        onclick="downloadFile('DevicehFileNameInput','DevicehFileData')">Download</button>
+                    <button class="btn btn-sm btn-outline" type="button"
+                        onclick="copyToClipboard('DevicehFileData')">Copy</button>
                 </div>
                 <pre class="output-code" tabindex="0"><code class="language-c" id="DevicehFileData"></code></pre>
             </div>
