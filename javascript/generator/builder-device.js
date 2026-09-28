@@ -1426,6 +1426,7 @@ __weak void USBD_HID_Set_Report_Callback (uint8_t busid, uint8_t intf, uint8_t r
         ${(() => {
                 if (USBD_KeyBoard_ReportId_List.length) {
                     // Group by intf, generate per-interface conditions
+                    const ptr = kb.id ? '1' : '0';
                     let conditions = USBD_KeyBoard_ReportId_List.map(kb => {
                         if (kb.id) {
                             return `(intf == ${kb.intf} && report_id == ${kb.id})`;
@@ -1433,9 +1434,9 @@ __weak void USBD_HID_Set_Report_Callback (uint8_t busid, uint8_t intf, uint8_t r
                             return `(intf == ${kb.intf})`;
                         }
                     });
-                    return `\r\nif (report_type == HID_REPORT_OUTPUT) {\
+                    return `\r\nif (report_type == HID_REPORT_OUTPUT && report_len >= 1) {\
                     \r\n    if (${conditions.join(' || ')}) {\
-                    \r\n        usbd.KeyBoardLedState = report[1];\
+                    \r\n        usbd.KeyBoardLedState = report[${ptr}];\
                     \r\n    }\
                     \r\n}`;
                 }
