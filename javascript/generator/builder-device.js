@@ -1426,7 +1426,9 @@ __weak void USBD_HID_Set_Report_Callback (uint8_t busid, uint8_t intf, uint8_t r
         ${(() => {
                 if (USBD_KeyBoard_ReportId_List.length) {
                     // Group by intf, generate per-interface conditions
-                    const ptr = kb.id ? '1' : '0';
+                    const ptr = USBD_KeyBoard_ReportId_List.map(kb => {
+                        return kb.id ? '1' : '0';
+                    });
                     let conditions = USBD_KeyBoard_ReportId_List.map(kb => {
                         if (kb.id) {
                             return `(intf == ${kb.intf} && report_id == ${kb.id})`;
